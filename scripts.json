@@ -1,0 +1,29 @@
+{
+  "scripts": {
+    "start": "concurrently \"npm run start:renderer\" \"npm run start:main\"",
+    "start:main": "tsc -p src/main && wait-on http://localhost:3000 && electron .",
+    "start:renderer": "cross-env BROWSER=none react-scripts start",
+    "build": "react-scripts build && tsc -p src/main",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.example.dialogcraft",
+    "productName": "Dialog Craft",
+    "files": [
+      "dist/**/*",
+      "build/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "mac": {
+      "target": "dmg"
+    }
+  }
+}
