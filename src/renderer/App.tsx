@@ -1,14 +1,15 @@
 import React from 'react';
 import MainLayout from './layouts/MainLayout';
+import { EditorProvider } from './contexts/EditorContext';
+import Workspace from './components/Workspace';
 
 const App: React.FC = () => {
   return (
-    <MainLayout>
-      <div style={{ padding: '20px' }}>
-        <h1>Dialog Craft</h1>
-        <p>Редактор диалоговых систем для геймдизайнеров</p>
-      </div>
-    </MainLayout>
+    <EditorProvider>
+      <MainLayout>
+        <Workspace />
+      </MainLayout>
+    </EditorProvider>
   );
 };
 
