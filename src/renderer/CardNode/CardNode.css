@@ -1,0 +1,76 @@
+/* src/renderer/components/CardNode/CardNode.css */
+.card-node {
+    width: 300px;
+    min-height: 100px;
+    background-color: #ffffff;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    position: relative;
+    cursor: pointer;
+    transition: box-shadow 0.2s ease-in-out;
+  }
+
+  .card-node.selected {
+    box-shadow: 0 0 0 2px #3498db;
+  }
+
+  .card-node.narrator {
+    background-color: #f8f9fa;
+    border-color: #6c757d;
+  }
+
+  .card-node.thought {
+    background-color: #f0f4f8;
+    border-style: dashed;
+  }
+
+  .card-header {
+    margin-bottom: 10px;
+  }
+
+  .card-title {
+    font-weight: bold;
+    font-size: 16px;
+  }
+
+  .card-character {
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
+  }
+
+  .card-content {
+    margin-bottom: 10px;
+  }
+
+  .card-text {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .card-actions {
+    position: absolute;
+    bottom: -15px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
+  }
+
+  .edge-button {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  .edge-button:hover {
+    background-color: #2980b9;
+  }
