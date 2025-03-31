@@ -1,4 +1,4 @@
-// Упрощенная версия src/renderer/contexts/EditorContext.tsx
+// src/renderer/contexts/EditorContext.tsx
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { GraphService } from '../../services/GraphService';
 import { Card } from '../../shared/types/card';
@@ -19,6 +19,8 @@ interface EditorContextType {
   updateEdge: (id: string, updates: Partial<Edge>) => Edge;
   deleteEdge: (id: string) => void;
   setSelectedEdge: (id: string | null) => void;
+
+  setScene: (scene: DialogScene) => void;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -30,6 +32,13 @@ export const EditorProvider: React.FC<{ children: ReactNode; graphService: Graph
   const [scene, setSceneState] = useState<DialogScene>(graphService.getScene());
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
+
+  const setScene = useCallback((newScene: DialogScene) => {
+    graphService.setScene(newScene);
+    setSceneState(newScene);
+    setSelectedCardId(null);
+    setSelectedEdgeId(null);
+  }, [graphService]);
 
   const addCard = useCallback((card?: Partial<Card>) => {
     const newCard = graphService.addCard(card);
@@ -84,7 +93,9 @@ export const EditorProvider: React.FC<{ children: ReactNode; graphService: Graph
     addEdge,
     updateEdge,
     deleteEdge,
-    setSelectedEdge: setSelectedEdgeId
+    setSelectedEdge: setSelectedEdgeId,
+
+    setScene
   };
 
   return (
