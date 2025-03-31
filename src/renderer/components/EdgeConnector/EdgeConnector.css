@@ -1,0 +1,28 @@
+/* src/renderer/components/EdgeConnector/EdgeConnector.css */
+.edge-connector {
+    position: absolute;
+    cursor: pointer;
+    z-index: 5;
+  }
+
+  .edge-connector.selected path {
+    stroke-width: 3px;
+  }
+
+  .edge-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #607D8B;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 10;
+  }
+
+  .edge-connector:hover .edge-label {
+    opacity: 1;
+  }

@@ -1,6 +1,7 @@
 // webpack.config.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = [
   // Main process config
@@ -10,7 +11,7 @@ module.exports = [
     target: 'electron-main',
     output: {
       filename: 'main.js',
-      path: path.resolve(__dirname, 'dist')
+      path: path.resolve(__dirname, 'dist/main')
     },
     module: {
       rules: [
@@ -26,7 +27,14 @@ module.exports = [
     },
     node: {
       __dirname: false
-    }
+    },
+    plugins: [
+      new CopyPlugin({
+        patterns: [
+          { from: 'src/main/preload.js', to: './' }
+        ],
+      }),
+    ]
   },
 
   // Renderer process config
