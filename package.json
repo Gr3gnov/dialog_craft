@@ -5,10 +5,9 @@
   "main": "dist/main/main.js",
   "homepage": "./",
   "scripts": {
-    "start": "npm run build && electron .",
-    "dev": "concurrently \"npm run watch\" \"electron .\"",
-    "build": "webpack --mode development",
-    "watch": "webpack --watch --mode development"
+    "start": "webpack && electron .",
+    "dev": "webpack --watch --mode development & electron .",
+    "build": "webpack --mode production"
   },
   "browser": "src/renderer/index.tsx",
   "build": {
