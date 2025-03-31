@@ -1,16 +1,10 @@
+// src/renderer/App.tsx
 import React from 'react';
-import MainLayout from './layouts/MainLayout';
-import { EditorProvider } from './contexts/EditorContext';
-import Workspace from './components/Workspace';
+import { MainLayout } from './layouts/MainLayout';
+import './App.css';
 
 const App: React.FC = () => {
-  return (
-    <EditorProvider>
-      <MainLayout>
-        <Workspace />
-      </MainLayout>
-    </EditorProvider>
-  );
+  return <MainLayout />;
 };
 
 export default App;
