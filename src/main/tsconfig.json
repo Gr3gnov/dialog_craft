@@ -1,21 +1,32 @@
+// src/main/tsconfig.json
 {
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "lib": ["dom", "es2020"],
+    "lib": [
+      "dom",
+      "es2020"
+    ],
     "sourceMap": true,
     "outDir": "../../dist/main",
-    "rootDir": "./",
+    "rootDir": "../", // Изменено с "./" на "../" чтобы включить src директорию
     "strict": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "skipLibCheck": true,  // Добавлено для пропуска проверки библиотек
+    "skipLibCheck": true,
     "baseUrl": "../",
     "paths": {
-      "@/*": ["*"]
+      "@/*": [
+        "*"
+      ]
     }
   },
-  "include": ["./**/*"],
-  "exclude": ["../renderer/**/*", "../node_modules/**/*"]  // Исключаем renderer, чтобы избежать конфликтов типов
+  "include": [
+    "../**/*"
+  ], // Изменено для включения всех файлов из src
+  "exclude": [
+    "../renderer/**/*",
+    "../node_modules/**/*"
+  ]
 }

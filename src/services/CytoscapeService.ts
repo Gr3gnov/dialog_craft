@@ -58,7 +58,8 @@ export class CytoscapeService {
           style: {
             'border-width': 2,
             'border-color': '#3498db',
-            'box-shadow': '0 0 5px #3498db'
+            // Убираем box-shadow, т.к. он не поддерживается в Cytoscape
+            // 'box-shadow': '0 0 5px #3498db'
           }
         },
         {
@@ -173,7 +174,7 @@ export class CytoscapeService {
   /**
    * Create an edge definition from an edge
    */
-  private createEdgeDefinition(edge: Edge): ElementDefinition {
+  private createEdgeDefinition(edge: Edge): cytoscape.EdgeDefinition {
     return {
       data: {
         id: edge.id,
@@ -206,13 +207,13 @@ export class CytoscapeService {
 
     this.cy.layout({
       name: 'dagre',
+      // Используем правильные параметры для dagre layout
       rankDir: 'TB', // Top to bottom layout
       nodeDimensionsIncludeLabels: true,
-      rankSep: 100, // Vertical separation between nodes
-      edgeSep: 50, // Horizontal separation between edges
+      spacingFactor: 1.5, // Вместо rankSep и edgeSep
       animate: true,
       animationDuration: 500
-    }).run();
+    } as any).run(); // Добавляем приведение типов
   }
 
   /**

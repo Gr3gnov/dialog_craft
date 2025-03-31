@@ -50,7 +50,7 @@ export class FileService {
       await fs.promises.writeFile(filePath, JSON.stringify(scene, null, 2), 'utf-8');
     } catch (error) {
       console.error('Ошибка при сохранении файла:', error);
-      throw new Error(`Не удалось сохранить сцену: ${error.message}`);
+      throw new Error(`Не удалось сохранить сцену: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -61,9 +61,10 @@ export class FileService {
       return JSON.parse(data) as DialogScene;
     } catch (error) {
       console.error('Ошибка при загрузке файла:', error);
-      throw new Error(`Не удалось загрузить сцену: ${error.message}`);
+      throw new Error(`Не удалось загрузить сцену: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+
 
   // Выполнение автосохранения
   async performAutosave(scene: DialogScene): Promise<void> {
