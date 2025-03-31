@@ -1,0 +1,50 @@
+// src/renderer/styles/cytoscape-custom.css
+/* Стили для добавления элементов на узлы Cytoscape */
+
+.cy-node-overlay {
+  pointer-events: none;
+  z-index: 10;
+}
+
+.cy-node-entry-point {
+  width: 10px;
+  height: 10px;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.8);
+  border-radius: 50%;
+  pointer-events: auto;
+}
+
+.cy-node-exit-point {
+  width: 10px;
+  height: 10px;
+  background-color: #324EFF;
+  border-radius: 50%;
+  pointer-events: auto;
+}
+
+.cy-connector-button {
+  width: 14px;
+  height: 14px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  pointer-events: auto;
+}
+
+.cy-connector-button.red { background-color: #D80000; }
+.cy-connector-button.yellow { background-color: #FFD900; }
+.cy-connector-button.cyan { background-color: #00E5FF; }
+.cy-connector-button.green { background-color: #00FF2F; }
+.cy-connector-button.black { background-color: #000000; }
+
+.cy-connector-inner {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+}

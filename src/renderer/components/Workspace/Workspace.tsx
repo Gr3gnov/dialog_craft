@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { CytoscapeService } from '../../../services/CytoscapeService';
 import { useEditor } from '../../contexts/EditorContext';
 import './Workspace.css';
+import '../../styles/cytoscape-custom.css';
 
 interface WorkspaceProps {
   cytoscapeService: CytoscapeService;
@@ -37,6 +38,12 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
         // Update card position in editor
         editor.updateCard(id, { position });
       });
+
+      // Добавить обработчик для начала создания связи
+      cytoscapeService.onStartEdgeCreation((sourceId) => {
+        setIsEdgeCreationMode(true);
+        setSourceNodeId(sourceId);
+      });
     }
 
     return () => {
@@ -44,7 +51,6 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
       // (if necessary)
     };
   }, [cytoscapeService]);
-
   // Update graph when scene changes
   useEffect(() => {
     cytoscapeService.renderGraph(editor.scene.cards, editor.scene.edges);
