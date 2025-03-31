@@ -2,90 +2,56 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-module.exports = [
-  // Конфигурация для основного процесса Electron
-  {
-    mode: process.env.NODE_ENV || 'development',
-    entry: './src/main/main.ts',
-    target: 'electron-main',
-    output: {
-      filename: 'main.js',
-      path: path.resolve(__dirname, 'dist')
-    },
-    module: {
-      rules: [
-        {
-          test: /\.ts$/,
-          include: /src/,
-          use: [{ loader: 'ts-loader' }]
-        }
-      ]
-    },
-    resolve: {
-      extensions: ['.ts', '.js']
-    },
-    node: {
-      __dirname: false
-    }
+module.exports = {
+  mode: process.env.NODE_ENV || 'development',
+  entry: {
+    main: './src/main/main.js',
+    renderer: './src/renderer/index.tsx'
   },
-  // Конфигурация для preload скрипта
-  {
-    mode: process.env.NODE_ENV || 'development',
-    entry: './src/main/preload.ts',
-    target: 'electron-preload',
-    output: {
-      filename: 'preload.js',
-      path: path.resolve(__dirname, 'dist')
-    },
-    module: {
-      rules: [
-        {
-          test: /\.ts$/,
-          include: /src/,
-          use: [{ loader: 'ts-loader' }]
-        }
-      ]
-    },
-    resolve: {
-      extensions: ['.ts', '.js']
-    }
+  target: 'electron-renderer',
+  output: {
+    filename: '[name].js',
+    path: path.resolve(__dirname, 'dist')
   },
-  // Конфигурация для процесса рендеринга
-  {
-    mode: process.env.NODE_ENV || 'development',
-    entry: './src/renderer/index.tsx',
-    target: 'electron-renderer',
-    output: {
-      filename: 'renderer.js',
-      path: path.resolve(__dirname, 'dist/renderer')
-    },
-    module: {
-      rules: [
-        {
-          test: /\.tsx?$/,
-          include: /src/,
-          use: [{ loader: 'ts-loader' }]
-        },
-        {
-          test: /\.css$/,
-          use: ['style-loader', 'css-loader']
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'ts-loader',
+          options: {
+            transpileOnly: true
+          }
         }
-      ]
-    },
-    resolve: {
-      extensions: ['.tsx', '.ts', '.js']
-    },
-    plugins: [
-      new HtmlWebpackPlugin({
-        template: path.resolve(__dirname, 'public/index.html')
-      })
-    ],
-    devServer: {
-      static: {
-        directory: path.join(__dirname, 'public')
       },
-      compress: true,
-      port: 9000
-    }
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader']
+      },
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env', '@babel/preset-react']
+          }
+        }
+      }
+    ]
+  },
+  resolve: {
+    extensions: ['.tsx', '.ts', '.js', '.jsx']
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: './public/index.html',
+      filename: 'index.html',
+      chunks: ['renderer']
+    })
+  ],
+  node: {
+    __dirname: false
   }
-];
+};
