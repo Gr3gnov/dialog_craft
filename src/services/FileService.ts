@@ -9,64 +9,63 @@ export class FileService {
   private maxAutosaves: number = 5;
 
   constructor() {
-    // Создаем директорию для автосохранений
+    // Create directory for autosaves
     this.autosaveDir = path.join(app.getPath('userData'), 'autosaves');
     if (!fs.existsSync(this.autosaveDir)) {
       fs.mkdirSync(this.autosaveDir, { recursive: true });
     }
   }
 
-  // Метод для выбора пути сохранения файла через диалог
+  // Method to select a save path via dialog
   async selectSavePath(): Promise<string | null> {
     const result = await dialog.showSaveDialog({
-      title: 'Сохранить сцену',
-      defaultPath: 'новая_сцена.dcscene',
+      title: 'Save Scene',
+      defaultPath: 'new_scene.dcscene',
       filters: [
         { name: 'Dialog Craft Scene', extensions: ['dcscene'] },
-        { name: 'Все файлы', extensions: ['*'] }
+        { name: 'All Files', extensions: ['*'] }
       ]
     });
 
-    return result.canceled ? null : result.filePath;
+    return result.canceled ? null : (result.filePath || null);
   }
 
-  // Метод для выбора файла для загрузки через диалог
+  // Method to select a file to load via dialog
   async selectLoadPath(): Promise<string | null> {
     const result = await dialog.showOpenDialog({
-      title: 'Открыть сцену',
+      title: 'Open Scene',
       filters: [
         { name: 'Dialog Craft Scene', extensions: ['dcscene'] },
-        { name: 'Все файлы', extensions: ['*'] }
+        { name: 'All Files', extensions: ['*'] }
       ],
       properties: ['openFile']
     });
 
-    return result.canceled ? null : result.filePaths[0];
+    return result.canceled ? null : (result.filePaths[0] || null);
   }
 
-  // Сохранение сцены в файл
+  // Save scene to file
   async saveScene(scene: DialogScene, filePath: string): Promise<void> {
     try {
       await fs.promises.writeFile(filePath, JSON.stringify(scene, null, 2), 'utf-8');
-    } catch (error) {
-      console.error('Ошибка при сохранении файла:', error);
-      throw new Error(`Не удалось сохранить сцену: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error: unknown) {
+      console.error('Error saving file:', error);
+      throw new Error(`Failed to save scene: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-  // Загрузка сцены из файла
+  // Load scene from file
   async loadScene(filePath: string): Promise<DialogScene> {
     try {
       const data = await fs.promises.readFile(filePath, 'utf-8');
       return JSON.parse(data) as DialogScene;
-    } catch (error) {
-      console.error('Ошибка при загрузке файла:', error);
-      throw new Error(`Не удалось загрузить сцену: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (error: unknown) {
+      console.error('Error loading file:', error);
+      throw new Error(`Failed to load scene: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-
-  // Выполнение автосохранения
+  // Perform autosave
   async performAutosave(scene: DialogScene): Promise<void> {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `autosave_${scene.name}_${timestamp}.dcscene`;
@@ -75,13 +74,13 @@ export class FileService {
     try {
       await this.saveScene(scene, filePath);
       await this.cleanupOldAutosaves();
-    } catch (error) {
-      console.error('Ошибка при автосохранении:', error);
-      // Логируем ошибку, но не выбрасываем исключение, чтобы не прерывать работу приложения
+    } catch (error: unknown) {
+      console.error('Error during autosave:', error);
+      // Log the error but don't throw an exception to avoid interrupting application work
     }
   }
 
-  // Получение списка файлов автосохранения
+  // Get list of autosave files
   async getAutosaveFiles(): Promise<string[]> {
     try {
       const files = await fs.promises.readdir(this.autosaveDir);
@@ -89,35 +88,35 @@ export class FileService {
         .filter(file => file.startsWith('autosave_') && file.endsWith('.dcscene'))
         .map(file => path.join(this.autosaveDir, file))
         .sort((a, b) => {
-          // Сортировка по времени изменения файла (от новых к старым)
+          // Sort by file modification time (from new to old)
           const statA = fs.statSync(a);
           const statB = fs.statSync(b);
           return statB.mtime.getTime() - statA.mtime.getTime();
         });
-    } catch (error) {
-      console.error('Ошибка при получении списка автосохранений:', error);
+    } catch (error: unknown) {
+      console.error('Error getting autosave list:', error);
       return [];
     }
   }
 
-  // Загрузка автосохранения
+  // Load autosave
   async loadAutosave(filePath: string): Promise<DialogScene> {
     return this.loadScene(filePath);
   }
 
-  // Очистка старых автосохранений
+  // Clean up old autosaves
   private async cleanupOldAutosaves(): Promise<void> {
     try {
       const files = await this.getAutosaveFiles();
       if (files.length > this.maxAutosaves) {
-        // Удаляем самые старые файлы, оставляя только maxAutosaves файлов
+        // Remove the oldest files, keeping only maxAutosaves files
         const filesToRemove = files.slice(this.maxAutosaves);
         for (const file of filesToRemove) {
           await fs.promises.unlink(file);
         }
       }
-    } catch (error) {
-      console.error('Ошибка при очистке старых автосохранений:', error);
+    } catch (error: unknown) {
+      console.error('Error cleaning up old autosaves:', error);
     }
   }
 }

@@ -5,42 +5,42 @@ import { Card } from '../shared/types/card';
 import { Edge } from '../shared/types/edge';
 
 export class ExportImportService {
-  // Экспорт сцены в YAML формат
+  // Export scene to YAML format
   exportToYAML(scene: DialogScene): string {
     try {
-      // Клонируем сцену для преобразования
+      // Clone the scene for conversion
       const sceneClone = JSON.parse(JSON.stringify(scene));
 
-      // Сортируем карточки по ID перед экспортом, как требуется в ТЗ
+      // Sort cards by ID before export, as required in specifications
       sceneClone.cards.sort((a: Card, b: Card) => a.id - b.id);
 
       return yaml.dump(sceneClone, {
         indent: 2,
-        lineWidth: -1, // Отключаем ограничение длины строки
-        noRefs: true   // Избегаем преобразования дублированных объектов в ссылки
+        lineWidth: -1, // Disable line length limit
+        noRefs: true   // Avoid converting duplicate objects to references
       });
-    } catch (error) {
-      console.error('Ошибка при экспорте в YAML:', error);
-      throw new Error(`Не удалось экспортировать в YAML: ${error.message}`);
+    } catch (error: unknown) {
+      console.error('Error exporting to YAML:', error);
+      throw new Error(`Failed to export to YAML: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-  // Импорт сцены из YAML формата
+  // Import scene from YAML format
   importFromYAML(yamlContent: string): DialogScene {
     try {
       const scene = yaml.load(yamlContent) as DialogScene;
 
-      // Проверка валидности импортируемой сцены
+      // Verify the validity of the imported scene
       this.validateScene(scene);
 
       return scene;
-    } catch (error) {
-      console.error('Ошибка при импорте из YAML:', error);
-      throw new Error(`Не удалось импортировать из YAML: ${error.message}`);
+    } catch (error: unknown) {
+      console.error('Error importing from YAML:', error);
+      throw new Error(`Failed to import from YAML: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-  // Методы для будущего расширения
+  // Methods for future expansion
   exportToJSON(scene: DialogScene): string {
     return JSON.stringify(scene, null, 2);
   }
@@ -50,43 +50,43 @@ export class ExportImportService {
       const scene = JSON.parse(jsonContent) as DialogScene;
       this.validateScene(scene);
       return scene;
-    } catch (error) {
-      console.error('Ошибка при импорте из JSON:', error);
-      throw new Error(`Не удалось импортировать из JSON: ${error.message}`);
+    } catch (error: unknown) {
+      console.error('Error importing from JSON:', error);
+      throw new Error(`Failed to import from JSON: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-  // Проверка валидности импортируемой сцены
+  // Validate imported scene
   private validateScene(scene: DialogScene): void {
-    // Проверяем наличие обязательных полей
+    // Check for required fields
     if (!scene.id || !scene.name || !Array.isArray(scene.cards) || !Array.isArray(scene.edges)) {
-      throw new Error('Некорректный формат сцены: отсутствуют обязательные поля');
+      throw new Error('Invalid scene format: required fields are missing');
     }
 
-    // Проверяем наличие обязательных полей в каждой карточке
+    // Check for required fields in each card
     scene.cards.forEach(card => {
       if (card.id === undefined || card.type === undefined ||
           card.title === undefined || card.text === undefined ||
           card.position === undefined) {
-        throw new Error(`Некорректный формат карточки с ID ${card.id}: отсутствуют обязательные поля`);
+        throw new Error(`Invalid card format with ID ${card.id}: required fields are missing`);
       }
     });
 
-    // Проверяем наличие обязательных полей в каждой связи
+    // Check for required fields in each connection
     scene.edges.forEach(edge => {
       if (edge.id === undefined || edge.source === undefined || edge.target === undefined) {
-        throw new Error(`Некорректный формат связи с ID ${edge.id}: отсутствуют обязательные поля`);
+        throw new Error(`Invalid connection format with ID ${edge.id}: required fields are missing`);
       }
     });
 
-    // Проверяем соответствие ID карточек в связях
+    // Check for correspondence of card IDs in connections
     const cardIds = new Set(scene.cards.map(card => card.id));
     scene.edges.forEach(edge => {
       if (!cardIds.has(edge.source)) {
-        throw new Error(`Связь ${edge.id} ссылается на несуществующую исходную карточку с ID ${edge.source}`);
+        throw new Error(`Connection ${edge.id} refers to a non-existent source card with ID ${edge.source}`);
       }
       if (!cardIds.has(edge.target)) {
-        throw new Error(`Связь ${edge.id} ссылается на несуществующую целевую карточку с ID ${edge.target}`);
+        throw new Error(`Connection ${edge.id} refers to a non-existent target card with ID ${edge.target}`);
       }
     });
   }
