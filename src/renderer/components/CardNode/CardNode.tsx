@@ -28,16 +28,51 @@ export const CardNode: React.FC<CardNodeProps> = ({ card, selected, onSelect, on
       className={`card-node ${selected ? 'selected' : ''} ${card.is_narrator ? 'narrator' : ''} ${card.is_thought ? 'thought' : ''}`}
       onClick={handleClick}
     >
-      <div className="card-header">
-        <div className="card-title">{card.title}</div>
-        {card.character_name && <div className="card-character">{card.character_name}</div>}
-      </div>
+      {/* Entry connection point */}
+      <div className="card-entry-point"></div>
+
       <div className="card-content">
-        <div className="card-text">{card.text}</div>
+        <div className="card-avatar"></div>
+        <div className="card-text-container">
+          <div className="card-title">{card.title}</div>
+          <div className="card-text">{card.text}</div>
+        </div>
       </div>
-      <div className="card-actions">
-        <button className="edge-button" onClick={handleStartEdge} title="Создать связь">
-          <span>+</span>
+
+      {/* Exit connection point */}
+      <div className="card-exit-point"></div>
+
+      {/* Edge connectors */}
+      <div className="card-edge-connectors">
+        <button
+          className="edge-connector-button red"
+          onClick={handleStartEdge}
+          title="Create connection">
+          <div className="connector-inner"></div>
+        </button>
+        <button
+          className="edge-connector-button yellow"
+          onClick={handleStartEdge}
+          title="Create connection">
+          <div className="connector-inner"></div>
+        </button>
+        <button
+          className="edge-connector-button cyan"
+          onClick={handleStartEdge}
+          title="Create connection">
+          <div className="connector-inner"></div>
+        </button>
+        <button
+          className="edge-connector-button green"
+          onClick={handleStartEdge}
+          title="Create connection">
+          <div className="connector-inner"></div>
+        </button>
+        <button
+          className="edge-connector-button black"
+          onClick={handleStartEdge}
+          title="Create connection">
+          <div className="connector-inner"></div>
         </button>
       </div>
     </div>

@@ -20,74 +20,82 @@ export class CytoscapeService {
    */
   initialize(container: HTMLElement): void {
     this.container = container;
+    interface CytoscapeStyle {
+      selector: string;
+      style: Record<string, string | number | ((ele: cytoscape.SingularElementArgument) => string)>;
+    }
+
+    interface CytoscapeLayout {
+      name: string;
+    }
+
     this.cy = cytoscape({
-      container,
+      container: container as HTMLElement,
       style: [
-        {
-          selector: 'node',
-          style: {
-            'background-color': '#fff',
-            'border-width': 1,
-            'border-color': 'rgba(126, 126, 126, 0.8)',
-            'border-style': 'solid',
-            'width': '300px',
-            'height': '80px',
-            'shape': 'rectangle',
-            'text-valign': 'center',
-            'text-halign': 'center',
-            'text-wrap': 'wrap',
-            'text-max-width': '200px',
-            'color': '#000',
-            'font-family': 'Inter, sans-serif',
-            'font-size': '10px',
-            'font-weight': '500',
-            // Use data field for label
-            'label': function(ele) {
-              const title = ele.data('title') || '';
-              const text = ele.data('text') || '';
-              return title + '\n' + text;
-            }
-          }
-        },
-        {
-          selector: 'node.narrator',
-          style: {
-            'background-color': '#f8f9fa'
-          }
-        },
-        {
-          selector: 'node.thought',
-          style: {
-            'border-style': 'dashed'
-          }
-        },
-        {
-          selector: 'edge',
-          style: {
-            'width': 2,
-            'line-color': 'data(color)',
-            'target-arrow-color': 'data(color)',
-            'target-arrow-shape': 'triangle',
-            'curve-style': 'bezier',
-            'label': 'data(label)',
-            'font-size': '12px',
-            'text-background-color': 'data(color)',
-            'text-background-opacity': 0.7,
-            'text-background-padding': '2px',
-            'color': '#fff'
-          }
-        },
-        {
-          selector: ':selected',
-          style: {
-            'border-width': 2,
-            'border-color': '#324EFF'
-          }
+      {
+        selector: 'node',
+        style: {
+        'background-color': '#fff',
+        'border-width': 1,
+        'border-color': 'rgba(126, 126, 126, 0.8)',
+        'border-style': 'solid',
+        'width': '300px',
+        'height': '80px',
+        'shape': 'rectangle',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'text-wrap': 'wrap',
+        'text-max-width': '200px',
+        'color': '#000',
+        'font-family': 'Inter, sans-serif',
+        'font-size': '10px',
+        'font-weight': 500,
+        'label': (ele: cytoscape.SingularElementArgument) => {
+          const title = ele.data('title') || '';
+          const text = ele.data('text') || '';
+          return title + '\n' + text;
         }
-      ],
-      layout: {
-        name: 'preset'
+        }
       },
+      {
+        selector: 'node.narrator',
+        style: {
+        'background-color': '#f8f9fa'
+        }
+      },
+      {
+        selector: 'node.thought',
+        style: {
+        'border-style': 'dashed'
+        }
+      },
+      {
+        selector: 'edge',
+        style: {
+        'width': 2,
+        'line-color': 'data(color)',
+        'target-arrow-color': 'data(color)',
+        'target-arrow-shape': 'triangle',
+        'curve-style': 'bezier',
+        'label': 'data(label)',
+        'font-size': '12px',
+        'text-background-color': 'data(color)',
+        'text-background-opacity': 0.7,
+        'text-background-padding': '2px',
+        'color': '#fff'
+        }
+      },
+      {
+        selector: ':selected',
+        style: {
+        'border-width': 2,
+        'border-color': '#324EFF'
+        }
+      }
+      ] as CytoscapeStyle[],
+      layout: {
+      name: 'preset'
+      } as CytoscapeLayout,
       userZoomingEnabled: true,
       userPanningEnabled: true,
       boxSelectionEnabled: false,
