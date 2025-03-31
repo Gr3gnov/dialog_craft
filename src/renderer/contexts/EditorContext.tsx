@@ -1,172 +1,176 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import GraphService from '../../services/GraphService';
-import { Card, Edge, DialogScene } from '../../shared/types';
+// src/renderer/contexts/EditorContext.tsx
+import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { GraphService } from '../../services/GraphService';
+import { Card } from '../../shared/types/card';
+import { Edge } from '../../shared/types/edge';
+import { DialogScene } from '../../shared/types/scene';
 
 interface EditorContextType {
-  graphService: GraphService;
+  // Состояние
   scene: DialogScene;
   selectedCardId: number | null;
   selectedEdgeId: string | null;
   isModified: boolean;
   currentFilePath: string | null;
-  setSelectedCardId: (id: number | null) => void;
-  setSelectedEdgeId: (id: string | null) => void;
-  createCard: (card: Partial<Card>) => Card;
+
+  // Методы для работы с карточками
+  addCard: (card?: Partial<Card>) => Card;
   updateCard: (id: number, updates: Partial<Card>) => Card;
   deleteCard: (id: number) => void;
-  createEdge: (source: number, target: number, options?: Partial<Edge>) => Edge;
+  setSelectedCard: (id: number | null) => void;
+
+  // Методы для работы со связями
+  addEdge: (source: number, target: number, options?: Partial<Edge>) => Edge;
   updateEdge: (id: string, updates: Partial<Edge>) => Edge;
   deleteEdge: (id: string) => void;
-  loadScene: (scene: DialogScene) => void;
-  setCurrentFilePath: (path: string | null) => void;
-  markAsModified: (modified?: boolean) => void;
+  setSelectedEdge: (id: string | null) => void;
+
+  // Методы для работы со сценой
+  setScene: (scene: DialogScene, filePath?: string | null) => void;
+  saveScene: () => Promise<boolean>;
+  loadScene: () => Promise<boolean>;
+  exportToYAML: () => Promise<boolean>;
+  importFromYAML: () => Promise<boolean>;
+
+  // Флаги состояния
+  setIsModified: (modified: boolean) => void;
 }
 
-const defaultScene: DialogScene = {
-  id: 'new-scene',
-  name: 'Новая сцена',
-  cards: [],
-  edges: []
-};
+// Создание контекста
+const EditorContext = createContext<EditorContextType | undefined>(undefined);
 
-export const EditorContext = createContext<EditorContextType | undefined>(undefined);
-
+// Провайдер контекста
 interface EditorProviderProps {
   children: ReactNode;
+  graphService: GraphService;
 }
 
-export const EditorProvider: React.FC<EditorProviderProps> = ({ children }) => {
-  const [graphService] = useState<GraphService>(() => new GraphService());
-  const [scene, setScene] = useState<DialogScene>(defaultScene);
+export const EditorProvider: React.FC<EditorProviderProps> = ({ children, graphService }) => {
+  const [scene, setSceneState] = useState<DialogScene>(graphService.getScene());
   const [selectedCardId, setSelectedCardId] = useState<number | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [isModified, setIsModified] = useState<boolean>(false);
   const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
 
-  // Инициализация сцены при загрузке
-  useEffect(() => {
-    updateSceneFromService();
-  }, []);
+  // Метод для обновления сцены
+  const setScene = useCallback((newScene: DialogScene, filePath: string | null = null) => {
+    graphService.setScene(newScene);
+    setSceneState(newScene);
+    setCurrentFilePath(filePath);
+    setIsModified(false);
+    setSelectedCardId(null);
+    setSelectedEdgeId(null);
+  }, [graphService]);
 
-  // Обновление сцены из сервиса
-  const updateSceneFromService = () => {
-    const { cards, edges } = graphService.getLayout();
-    setScene(prev => ({
-      ...prev,
-      cards,
-      edges
-    }));
-  };
-
-  // Функции для работы с карточками
-  const createCard = (card: Partial<Card>): Card => {
+  // Методы для работы с карточками
+  const addCard = useCallback((card?: Partial<Card>) => {
     const newCard = graphService.addCard(card);
-    updateSceneFromService();
+    setSceneState(graphService.getScene());
     setIsModified(true);
     return newCard;
-  };
+  }, [graphService]);
 
-  const updateCard = (id: number, updates: Partial<Card>): Card => {
+  const updateCard = useCallback((id: number, updates: Partial<Card>) => {
     const updatedCard = graphService.updateCard(id, updates);
-    updateSceneFromService();
+    setSceneState(graphService.getScene());
     setIsModified(true);
     return updatedCard;
-  };
+  }, [graphService]);
 
-  const deleteCard = (id: number): void => {
+  const deleteCard = useCallback((id: number) => {
     graphService.deleteCard(id);
+    setSceneState(graphService.getScene());
     if (selectedCardId === id) {
       setSelectedCardId(null);
     }
-    updateSceneFromService();
     setIsModified(true);
-  };
+  }, [graphService, selectedCardId]);
 
-  // Функции для работы со связями
-  const createEdge = (source: number, target: number, options?: Partial<Edge>): Edge => {
+  // Методы для работы со связями
+  const addEdge = useCallback((source: number, target: number, options?: Partial<Edge>) => {
     const newEdge = graphService.addEdge(source, target, options);
-    updateSceneFromService();
+    setSceneState(graphService.getScene());
     setIsModified(true);
     return newEdge;
-  };
+  }, [graphService]);
 
-  const updateEdge = (id: string, updates: Partial<Edge>): Edge => {
+  const updateEdge = useCallback((id: string, updates: Partial<Edge>) => {
     const updatedEdge = graphService.updateEdge(id, updates);
-    updateSceneFromService();
+    setSceneState(graphService.getScene());
     setIsModified(true);
     return updatedEdge;
-  };
+  }, [graphService]);
 
-  const deleteEdge = (id: string): void => {
+  const deleteEdge = useCallback((id: string) => {
     graphService.deleteEdge(id);
+    setSceneState(graphService.getScene());
     if (selectedEdgeId === id) {
       setSelectedEdgeId(null);
     }
-    updateSceneFromService();
     setIsModified(true);
-  };
+  }, [graphService, selectedEdgeId]);
 
-  // Загрузка сцены
-  const loadScene = (newScene: DialogScene): void => {
-    // Создаем новый экземпляр GraphService для загрузки сцены
-    const newGraphService = new GraphService();
-    
-    // Находим максимальный ID карточки для настройки nextCardId
-    if (newScene.cards.length > 0) {
-      const maxId = Math.max(...newScene.cards.map(card => card.id));
-      newGraphService.setNextCardId(maxId + 1);
-    }
+  // Методы для работы с файлами (заглушки, реализацию добавим позже)
+  const saveScene = useCallback(async (): Promise<boolean> => {
+    // Заглушка для метода сохранения
+    console.log('Saving scene...');
+    return true;
+  }, []);
 
-    // Загружаем карточки
-    newScene.cards.forEach(card => {
-      newGraphService.addCard(card);
-    });
+  const loadScene = useCallback(async (): Promise<boolean> => {
+    // Заглушка для метода загрузки
+    console.log('Loading scene...');
+    return true;
+  }, []);
 
-    // Загружаем связи
-    newScene.edges.forEach(edge => {
-      newGraphService.addEdge(edge.source, edge.target, edge);
-    });
+  const exportToYAML = useCallback(async (): Promise<boolean> => {
+    // Заглушка для метода экспорта
+    console.log('Exporting to YAML...');
+    return true;
+  }, []);
 
-    // Обновляем контекст
-    setScene(newScene);
-    setSelectedCardId(null);
-    setSelectedEdgeId(null);
-    setIsModified(false);
-  };
+  const importFromYAML = useCallback(async (): Promise<boolean> => {
+    // Заглушка для метода импорта
+    console.log('Importing from YAML...');
+    return true;
+  }, []);
 
-  const markAsModified = (modified: boolean = true): void => {
-    setIsModified(modified);
-  };
-
-  const contextValue: EditorContextType = {
-    graphService,
+  // Значение контекста
+  const value: EditorContextType = {
     scene,
     selectedCardId,
     selectedEdgeId,
     isModified,
     currentFilePath,
-    setSelectedCardId,
-    setSelectedEdgeId,
-    createCard,
+
+    addCard,
     updateCard,
     deleteCard,
-    createEdge,
+    setSelectedCard: setSelectedCardId,
+
+    addEdge,
     updateEdge,
     deleteEdge,
+    setSelectedEdge: setSelectedEdgeId,
+
+    setScene,
+    saveScene,
     loadScene,
-    setCurrentFilePath,
-    markAsModified
+    exportToYAML,
+    importFromYAML,
+
+    setIsModified
   };
 
   return (
-    <EditorContext.Provider value={contextValue}>
+    <EditorContext.Provider value={value}>
       {children}
     </EditorContext.Provider>
   );
 };
 
 // Хук для использования контекста
-export const useEditor = (): EditorContextType => {
+export const useEditor = () => {
   const context = useContext(EditorContext);
   if (context === undefined) {
     throw new Error('useEditor must be used within an EditorProvider');
