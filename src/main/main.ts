@@ -19,11 +19,24 @@ function createWindow() {
   });
 
   // Determine the correct path for loading the app
-  const startUrl = url.format({
-    pathname: path.join(__dirname, '../../dist/index.html'),
-    protocol: 'file:',
-    slashes: true
-  });
+  const isDev = process.env.NODE_ENV === 'development';
+  let startUrl: string;
+
+  if (isDev) {
+    // In development, we'll try to load from the built files directly
+    startUrl = url.format({
+      pathname: path.join(__dirname, '../../dist/index.html'),
+      protocol: 'file:',
+      slashes: true
+    });
+  } else {
+    // In production, load from the dist directory
+    startUrl = url.format({
+      pathname: path.join(__dirname, '../../dist/index.html'),
+      protocol: 'file:',
+      slashes: true
+    });
+  }
 
   console.log('Attempting to load:', startUrl);
 

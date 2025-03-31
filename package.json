@@ -6,7 +6,7 @@
   "homepage": "./",
   "scripts": {
     "start": "webpack && electron .",
-    "dev": "webpack --watch --mode development & electron .",
+    "dev": "concurrently \"webpack --watch --mode development\" \"electron .\"",
     "build": "webpack --mode production"
   },
   "browser": "src/renderer/index.tsx",
