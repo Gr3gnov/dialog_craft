@@ -3,10 +3,10 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = [
-  // Конфигурация для основного процесса Electron
+  // Main process config
   {
     mode: process.env.NODE_ENV || 'development',
-    entry: './src/main/main.ts',  // Обратите внимание на .ts расширение
+    entry: './src/main/main.ts',
     target: 'electron-main',
     output: {
       filename: 'main.js',
@@ -17,12 +17,7 @@ module.exports = [
         {
           test: /\.tsx?$/,
           exclude: /node_modules/,
-          use: {
-            loader: 'ts-loader',
-            options: {
-              transpileOnly: true
-            }
-          }
+          use: 'ts-loader',
         }
       ]
     },
@@ -33,7 +28,8 @@ module.exports = [
       __dirname: false
     }
   },
-  // Конфигурация для процесса рендеринга
+
+  // Renderer process config
   {
     mode: process.env.NODE_ENV || 'development',
     entry: './src/renderer/index.tsx',
@@ -47,12 +43,7 @@ module.exports = [
         {
           test: /\.tsx?$/,
           exclude: /node_modules/,
-          use: {
-            loader: 'ts-loader',
-            options: {
-              transpileOnly: true
-            }
-          }
+          use: 'ts-loader',
         },
         {
           test: /\.css$/,
@@ -61,7 +52,7 @@ module.exports = [
       ]
     },
     resolve: {
-      extensions: ['.tsx', '.ts', '.js']
+      extensions: ['.tsx', '.ts', '.js', '.jsx']
     },
     plugins: [
       new HtmlWebpackPlugin({
