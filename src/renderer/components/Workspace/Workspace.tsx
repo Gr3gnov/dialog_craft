@@ -14,15 +14,15 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
   const [isEdgeCreationMode, setIsEdgeCreationMode] = useState(false);
   const [sourceNodeId, setSourceNodeId] = useState<number | null>(null);
 
-  // Инициализация Cytoscape при монтировании компонента
+  // Initialize Cytoscape when component mounts
   useEffect(() => {
     if (cyContainerRef.current) {
       cytoscapeService.initialize(cyContainerRef.current);
 
-      // Передаем карточки и связи из текущей сцены в Cytoscape
+      // Pass cards and connections from current scene to Cytoscape
       cytoscapeService.renderGraph(editor.scene.cards, editor.scene.edges);
 
-      // Устанавливаем обработчики событий
+      // Set up event handlers
       cytoscapeService.onNodeSelected((id) => {
         editor.setSelectedCard(id);
         editor.setSelectedEdge(null);
@@ -34,22 +34,22 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
       });
 
       cytoscapeService.onNodeMoved((id, position) => {
-        // Обновляем позицию карточки в редакторе
+        // Update card position in editor
         editor.updateCard(id, { position });
       });
     }
 
     return () => {
-      // Очистка при демонтировании компонента
-      // (если необходимо)
+      // Cleanup when component unmounts
+      // (if necessary)
     };
   }, [cytoscapeService]);
 
-  // Обновляем граф при изменении сцены
+  // Update graph when scene changes
   useEffect(() => {
     cytoscapeService.renderGraph(editor.scene.cards, editor.scene.edges);
 
-    // Если есть выбранный элемент, выделяем его
+    // If there's a selected element, highlight it
     if (editor.selectedCardId !== null) {
       cytoscapeService.selectElement('node', editor.selectedCardId);
     } else if (editor.selectedEdgeId !== null) {
@@ -57,13 +57,13 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
     }
   }, [editor.scene, editor.selectedCardId, editor.selectedEdgeId]);
 
-  // Обработчик начала создания связи
+  // Handler for starting edge creation
   const handleStartEdgeCreation = (sourceId: number) => {
     setIsEdgeCreationMode(true);
     setSourceNodeId(sourceId);
   };
 
-  // Обработчик завершения создания связи
+  // Handler for completing edge creation
   const handleCompleteEdgeCreation = (targetId: number) => {
     if (sourceNodeId !== null && sourceNodeId !== targetId) {
       editor.addEdge(sourceNodeId, targetId);
@@ -72,70 +72,67 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
     setSourceNodeId(null);
   };
 
-  // Обработчик отмены создания связи
+  // Handler for canceling edge creation
   const handleCancelEdgeCreation = () => {
     setIsEdgeCreationMode(false);
     setSourceNodeId(null);
   };
 
-  // Обработчик добавления новой карточки
+  // Handler for adding a new card
   const handleAddCard = () => {
     const newCard = editor.addCard({
-      position: { x: 100, y: 100 } // Позиция по умолчанию
+      position: { x: 100, y: 100 } // Default position
     });
 
-    // Выбираем новую карточку
+    // Select the new card
     editor.setSelectedCard(newCard.id);
 
-    // Центрируем вид на новой карточке
+    // Center view on the new card
     cytoscapeService.centerOn(newCard.id.toString());
   };
 
-  // Обработчик автоматического размещения
+  // Handler for auto layout
   const handleAutoLayout = () => {
     cytoscapeService.applyLayout();
   };
 
-  // Рендеринг компонента
   return (
     <div className="workspace-container">
-      {/* Панель инструментов */}
+      {/* Toolbar */}
       <div className="workspace-toolbar">
         <button
           onClick={handleAddCard}
           className="toolbar-button"
-          title="Добавить карточку"
+          title="Add Card"
         >
-          <span>+</span> Карточка
+          <span>+</span> Card
         </button>
         <button
           onClick={handleAutoLayout}
           className="toolbar-button"
-          title="Автоматическое размещение"
+          title="Auto Layout"
         >
-          <span>⟲</span> Расположить
+          <span>⟲</span> Layout
         </button>
         {isEdgeCreationMode && (
           <div className="edge-creation-mode">
-            <span>Режим создания связи: выберите целевую карточку</span>
+            <span>Edge creation mode: select target card</span>
             <button
               onClick={handleCancelEdgeCreation}
               className="toolbar-button"
-              title="Отменить создание связи"
+              title="Cancel edge creation"
             >
-              Отмена
+              Cancel
             </button>
           </div>
         )}
       </div>
 
-      {/* Рабочая область Cytoscape */}
+      {/* Cytoscape container */}
       <div
         ref={cyContainerRef}
         className="cytoscape-container"
       ></div>
-
-      {/* Дополнительные элементы (кнопки на карточках для создания связей) будут добавлены в CSS */}
     </div>
   );
 };

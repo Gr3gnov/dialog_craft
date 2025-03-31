@@ -10,7 +10,7 @@ export const PropertyPanel: React.FC = () => {
   const [cardFormData, setCardFormData] = useState<Partial<Card>>({});
   const [edgeFormData, setEdgeFormData] = useState<Partial<Edge>>({});
 
-  // Обновление формы при изменении выбранной карточки
+  // Update form when selected card changes
   useEffect(() => {
     if (editor.selectedCardId !== null) {
       const selectedCard = editor.scene.cards.find(card => card.id === editor.selectedCardId);
@@ -22,7 +22,7 @@ export const PropertyPanel: React.FC = () => {
     }
   }, [editor.selectedCardId, editor.scene.cards]);
 
-  // Обновление формы при изменении выбранной связи
+  // Update form when selected edge changes
   useEffect(() => {
     if (editor.selectedEdgeId !== null) {
       const selectedEdge = editor.scene.edges.find(edge => edge.id === editor.selectedEdgeId);
@@ -34,11 +34,11 @@ export const PropertyPanel: React.FC = () => {
     }
   }, [editor.selectedEdgeId, editor.scene.edges]);
 
-  // Обработчик изменения поля карточки
+  // Handle card input changes
   const handleCardInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
 
-    // Обработка чекбоксов
+    // Handle checkboxes
     if (type === 'checkbox') {
       const checkbox = e.target as HTMLInputElement;
       setCardFormData({ ...cardFormData, [name]: checkbox.checked });
@@ -47,49 +47,49 @@ export const PropertyPanel: React.FC = () => {
     }
   };
 
-  // Обработчик изменения поля связи
+  // Handle edge input changes
   const handleEdgeInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setEdgeFormData({ ...edgeFormData, [name]: value });
   };
 
-  // Сохранение изменений карточки
+  // Save card changes
   const handleSaveCard = () => {
     if (editor.selectedCardId !== null && cardFormData.id !== undefined) {
       editor.updateCard(editor.selectedCardId, cardFormData);
     }
   };
 
-  // Сохранение изменений связи
+  // Save edge changes
   const handleSaveEdge = () => {
     if (editor.selectedEdgeId !== null && edgeFormData.id !== undefined) {
       editor.updateEdge(editor.selectedEdgeId, edgeFormData);
     }
   };
 
-  // Удаление карточки
+  // Delete card
   const handleDeleteCard = () => {
     if (editor.selectedCardId !== null) {
-      if (window.confirm('Вы уверены, что хотите удалить эту карточку?')) {
+      if (window.confirm('Are you sure you want to delete this card?')) {
         editor.deleteCard(editor.selectedCardId);
       }
     }
   };
 
-  // Удаление связи
+  // Delete edge
   const handleDeleteEdge = () => {
     if (editor.selectedEdgeId !== null) {
-      if (window.confirm('Вы уверены, что хотите удалить эту связь?')) {
+      if (window.confirm('Are you sure you want to delete this edge?')) {
         editor.deleteEdge(editor.selectedEdgeId);
       }
     }
   };
 
-  // Рендеринг формы для карточки
+  // Render card form
   const renderCardForm = () => {
     return (
       <form onSubmit={(e) => { e.preventDefault(); handleSaveCard(); }}>
-        <h3>Свойства карточки</h3>
+        <h3>Card Properties</h3>
 
         <div className="form-group">
           <label htmlFor="id">ID:</label>
@@ -103,7 +103,7 @@ export const PropertyPanel: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="title">Название:</label>
+          <label htmlFor="title">Title:</label>
           <input
             type="text"
             id="title"
@@ -114,7 +114,7 @@ export const PropertyPanel: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="text">Текст:</label>
+          <label htmlFor="text">Text:</label>
           <textarea
             id="text"
             name="text"
@@ -125,60 +125,12 @@ export const PropertyPanel: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="character_name">Имя персонажа:</label>
+          <label htmlFor="character_name">Character Name:</label>
           <input
             type="text"
             id="character_name"
             name="character_name"
             value={cardFormData.character_name || ''}
-            onChange={handleCardInputChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="background">Фон:</label>
-          <input
-            type="text"
-            id="background"
-            name="background"
-            value={cardFormData.background || ''}
-            onChange={handleCardInputChange}
-          />
-          <button type="button" className="browse-button">Обзор...</button>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="portrait">Портрет:</label>
-          <input
-            type="text"
-            id="portrait"
-            name="portrait"
-            value={cardFormData.portrait || ''}
-            onChange={handleCardInputChange}
-          />
-          <button type="button" className="browse-button">Обзор...</button>
-        </div>
-
-        <div className="form-group checkbox-group">
-          <input
-            type="checkbox"
-            id="introduce_character"
-            name="introduce_character"
-            checked={cardFormData.introduce_character || false}
-            onChange={handleCardInputChange}
-          />
-          <label htmlFor="introduce_character">Представить персонажа</label>
-        </div>
-
-        <div className="form-group">
-          <label htmlFor="pause">Пауза (сек):</label>
-          <input
-            type="number"
-            id="pause"
-            name="pause"
-            step="0.1"
-            min="0"
-            value={cardFormData.pause || ''}
             onChange={handleCardInputChange}
           />
         </div>
@@ -191,7 +143,7 @@ export const PropertyPanel: React.FC = () => {
             checked={cardFormData.is_narrator || false}
             onChange={handleCardInputChange}
           />
-          <label htmlFor="is_narrator">Рассказчик</label>
+          <label htmlFor="is_narrator">Narrator</label>
         </div>
 
         <div className="form-group checkbox-group">
@@ -202,25 +154,25 @@ export const PropertyPanel: React.FC = () => {
             checked={cardFormData.is_thought || false}
             onChange={handleCardInputChange}
           />
-          <label htmlFor="is_thought">Мысль</label>
+          <label htmlFor="is_thought">Thought</label>
         </div>
 
         <div className="form-actions">
-          <button type="submit" className="save-button">Сохранить</button>
-          <button type="button" className="delete-button" onClick={handleDeleteCard}>Удалить</button>
+          <button type="submit" className="save-button">Save</button>
+          <button type="button" className="delete-button" onClick={handleDeleteCard}>Delete</button>
         </div>
       </form>
     );
   };
 
-  // Рендеринг формы для связи
+  // Render edge form
   const renderEdgeForm = () => {
     return (
       <form onSubmit={(e) => { e.preventDefault(); handleSaveEdge(); }}>
-        <h3>Свойства связи</h3>
+        <h3>Edge Properties</h3>
 
         <div className="form-group">
-          <label htmlFor="label">Название:</label>
+          <label htmlFor="label">Label:</label>
           <input
             type="text"
             id="label"
@@ -231,22 +183,22 @@ export const PropertyPanel: React.FC = () => {
         </div>
 
         <div className="form-group">
-          <label htmlFor="type">Тип:</label>
+          <label htmlFor="type">Type:</label>
           <select
             id="type"
             name="type"
             value={edgeFormData.type || 'normal'}
             onChange={handleEdgeInputChange}
           >
-            <option value="normal">Обычный</option>
-            <option value="success">Успех</option>
-            <option value="failure">Неудача</option>
-            <option value="special">Специальный</option>
+            <option value="normal">Normal</option>
+            <option value="success">Success</option>
+            <option value="failure">Failure</option>
+            <option value="special">Special</option>
           </select>
         </div>
 
         <div className="form-group">
-          <label htmlFor="color">Цвет:</label>
+          <label htmlFor="color">Color:</label>
           <input
             type="color"
             id="color"
@@ -256,29 +208,14 @@ export const PropertyPanel: React.FC = () => {
           />
         </div>
 
-        <div className="form-group">
-          <label>Источник:</label>
-          <span className="read-only-value">
-            {edgeFormData.source !== undefined ? `Карточка #${edgeFormData.source}` : ''}
-          </span>
-        </div>
-
-        <div className="form-group">
-          <label>Цель:</label>
-          <span className="read-only-value">
-            {edgeFormData.target !== undefined ? `Карточка #${edgeFormData.target}` : ''}
-          </span>
-        </div>
-
         <div className="form-actions">
-          <button type="submit" className="save-button">Сохранить</button>
-          <button type="button" className="delete-button" onClick={handleDeleteEdge}>Удалить</button>
+          <button type="submit" className="save-button">Save</button>
+          <button type="button" className="delete-button" onClick={handleDeleteEdge}>Delete</button>
         </div>
       </form>
     );
   };
 
-  // Рендеринг компонента
   return (
     <div className="property-panel">
       {editor.selectedCardId !== null ? (
@@ -287,7 +224,7 @@ export const PropertyPanel: React.FC = () => {
         renderEdgeForm()
       ) : (
         <div className="no-selection">
-          <p>Выберите карточку или связь для редактирования свойств</p>
+          <p>Select a card or edge to edit properties</p>
         </div>
       )}
     </div>
