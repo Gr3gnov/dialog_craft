@@ -19,39 +19,40 @@ export const Canvas: React.FC = () => {
 
   // Handle canvas pan (drag)
   const handleMouseDown = (e: MouseEvent) => {
-    // Only drag canvas when clicking on canvas background
-    if ((e.target as HTMLElement).classList.contains('canvas')) {
+    // Проверяем, что клик был на холсте, а не на карточке или другом элементе
+    if (e.target === canvasRef.current || (e.target as HTMLElement).classList.contains('canvas-grid')) {
       setIsDraggingCanvas(true);
       setStartPos({ x: e.clientX, y: e.clientY });
+      e.preventDefault(); // Предотвращаем выделение текста и другие действия
     }
   };
 
   const handleMouseMove = (e: MouseEvent) => {
     if (isDraggingCanvas) {
+      // Вычисляем дельту перемещения
       const dx = e.clientX - startPos.x;
       const dy = e.clientY - startPos.y;
 
-      // Обновляем смещение
+      // Обновляем позицию
       setOffset({
-        x: offset.x + dx / scale, // Учитываем масштаб при смещении
+        x: offset.x + dx / scale,
         y: offset.y + dy / scale
       });
 
+      // Обновляем стартовую позицию для следующего движения
       setStartPos({ x: e.clientX, y: e.clientY });
+      e.preventDefault();
     }
 
+    // Остальной код для временного соединения
     if (isCreatingEdge) {
-      // Координаты для временного соединения также должны учитывать смещение и масштаб
-      const canvasRect = canvasRef.current?.getBoundingClientRect();
-      if (canvasRect) {
-        const x = (e.clientX - canvasRect.left) / scale - offset.x;
-        const y = (e.clientY - canvasRect.top) / scale - offset.y;
-        setTempEdgeEnd({ x, y });
-      }
+      setTempEdgeEnd({ x: (e.clientX - offset.x * scale) / scale, y: (e.clientY - offset.y * scale) / scale });
     }
   };
   const handleMouseUp = () => {
-    setIsDraggingCanvas(false);
+    if (isDraggingCanvas) {
+      setIsDraggingCanvas(false);
+    }
   };
 
   // Handle zoom
@@ -141,16 +142,17 @@ export const Canvas: React.FC = () => {
       </div>
 
       <div
-        ref={canvasRef}
-        className="canvas"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onWheel={handleWheel}
-        style={{
-          transform: `scale(${scale}) translate(${offset.x}px, ${offset.y}px)`
-        }}
-      >
+  ref={canvasRef}
+  className={`canvas ${isDraggingCanvas ? 'dragging' : ''}`}
+  onMouseDown={handleMouseDown}
+  onMouseMove={handleMouseMove}
+  onMouseUp={handleMouseUp}
+  onMouseLeave={handleMouseUp} /* Добавляем обработку выхода курсора */
+  onWheel={handleWheel}
+  style={{
+    transform: `scale(${scale}) translate(${offset.x}px, ${offset.y}px)`
+  }}
+>
         {/* Grid background */}
         <div className="canvas-grid"></div>
 

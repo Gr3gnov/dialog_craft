@@ -12,6 +12,11 @@
     position: absolute;
     transform-origin: 0 0;
     background-color: #f5f5f5;
+    cursor: grab; /* Показывать руку для перемещения */
+  }
+
+  .canvas.dragging {
+    cursor: grabbing; /* Показывать сжатую руку при перемещении */
   }
 
   .canvas-grid {
