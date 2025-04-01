@@ -21,100 +21,54 @@ export const Canvas: React.FC = () => {
     if (!canvas) return;
 
     let isPanning = false;
-    let lastPosition = { x: 0, y: 0 };
+    let lastX = 0, lastY = 0;
 
-    // Mouse down handler for panning
     const handleMouseDown = (e: MouseEvent) => {
-      // Only start panning if clicking on the canvas or grid, not on cards/connections
+      // Simple check - click directly on canvas or grid
       if (e.target === canvas || (e.target as HTMLElement).classList.contains('canvas-grid')) {
         isPanning = true;
-        lastPosition = { x: e.clientX, y: e.clientY };
+        lastX = e.clientX;
+        lastY = e.clientY;
         canvas.style.cursor = 'grabbing';
-        e.preventDefault();
+        console.log("Panning started", { isPanning });
       }
     };
 
-    // Mouse move handler for panning
     const handleMouseMove = (e: MouseEvent) => {
-      if (isPanning) {
-        const dx = e.clientX - lastPosition.x;
-        const dy = e.clientY - lastPosition.y;
+      if (!isPanning) return;
 
-        setPanOffset(prev => ({
-          x: prev.x + dx,
-          y: prev.y + dy
-        }));
+      const dx = e.clientX - lastX;
+      const dy = e.clientY - lastY;
+      lastX = e.clientX;
+      lastY = e.clientY;
 
-        lastPosition = { x: e.clientX, y: e.clientY };
-        e.preventDefault();
-      }
+      console.log("Panning move", { dx, dy, isPanning });
 
-      // Edge creation logic
-      if (isCreatingEdge) {
-        const rect = canvas.getBoundingClientRect();
-        const x = (e.clientX - rect.left - panOffset.x) / scale;
-        const y = (e.clientY - rect.top - panOffset.y) / scale;
-        setTempEdgeEnd({ x, y });
-      }
+      setPanOffset(prev => ({
+        x: prev.x + dx,
+        y: prev.y + dy
+      }));
     };
 
-    // Mouse up handler to stop panning
     const handleMouseUp = () => {
       if (isPanning) {
         isPanning = false;
         canvas.style.cursor = 'grab';
+        console.log("Panning ended");
       }
     };
 
-    // Mouse leave handler to stop panning if cursor leaves canvas
-    const handleMouseLeave = () => {
-      if (isPanning) {
-        isPanning = false;
-        canvas.style.cursor = 'grab';
-      }
-    };
-
-    // Wheel handler for zooming
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault();
-
-      const rect = canvas.getBoundingClientRect();
-      const mouseX = e.clientX - rect.left;
-      const mouseY = e.clientY - rect.top;
-
-      // Calculate point on canvas under the mouse in scaled coordinates
-      const pointX = (mouseX - panOffset.x) / scale;
-      const pointY = (mouseY - panOffset.y) / scale;
-
-      // Calculate new scale
-      const delta = e.deltaY < 0 ? 0.1 : -0.1;
-      const newScale = Math.min(Math.max(scale + delta, 0.1), 3);
-
-      // Calculate new offsets to zoom around mouse position
-      const newOffsetX = mouseX - pointX * newScale;
-      const newOffsetY = mouseY - pointY * newScale;
-
-      setScale(newScale);
-      setPanOffset({ x: newOffsetX, y: newOffsetY });
-    };
-
-    // Add event listeners
+    // Добавим слушатели напрямую к элементу
     canvas.addEventListener('mousedown', handleMouseDown);
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    canvas.addEventListener('mouseleave', handleMouseLeave);
-    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    document.addEventListener('mousemove', handleMouseMove); // Используем document для улавливания всех движений
+    document.addEventListener('mouseup', handleMouseUp);
 
-    // Clean up event listeners on unmount
     return () => {
       canvas.removeEventListener('mousedown', handleMouseDown);
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      canvas.removeEventListener('mouseleave', handleMouseLeave);
-      canvas.removeEventListener('wheel', handleWheel);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [scale, panOffset, isCreatingEdge, edgeStartCard]);
-
+  }, []);
   // Start edge creation
   const handleStartEdge = (cardId: number) => {
     setIsCreatingEdge(true);
@@ -189,12 +143,13 @@ export const Canvas: React.FC = () => {
       </div>
 
       <div
-        ref={canvasRef}
-        className="canvas"
-        style={{
-          transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`
-        }}
-      >
+  ref={canvasRef}
+  className="canvas"
+  style={{
+    transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`,
+    transformOrigin: '0 0' // Важно указать, чтобы масштабирование происходило от верхнего левого угла
+  }}
+>
         {/* Grid background */}
         <div className="canvas-grid"></div>
 
