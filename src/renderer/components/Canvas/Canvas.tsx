@@ -1,5 +1,5 @@
 // src/renderer/components/Canvas/Canvas.tsx
-import React, { useRef, useState, MouseEvent } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useEditor } from '../../contexts/EditorContext';
 import { Card } from '../../../shared/types/card';
 import { DraggableCard } from '../DraggableCard/DraggableCard';
@@ -10,105 +10,110 @@ export const Canvas: React.FC = () => {
   const editor = useEditor();
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
-  const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
-  const [isPanning, setIsPanning] = useState(false);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
   const [isCreatingEdge, setIsCreatingEdge] = useState(false);
   const [edgeStartCard, setEdgeStartCard] = useState<number | null>(null);
   const [tempEdgeEnd, setTempEdgeEnd] = useState({ x: 0, y: 0 });
 
-  // Обработка начала перемещения холста
-  const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    // Убедимся, что это клик на самом холсте, а не на карточке или другом интерактивном элементе
-    if (e.target === canvasRef.current || (e.target as HTMLElement).classList.contains('canvas-grid')) {
-      setIsPanning(true);
-      setStartPanPosition({ x: e.clientX, y: e.clientY });
-      e.preventDefault();
+  // Add DOM event listeners for panning and zooming
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      // Установка стиля курсора через DOM для гарантированного обновления
-      if (canvasRef.current) {
-        canvasRef.current.style.cursor = 'grabbing';
+    let isPanning = false;
+    let lastPosition = { x: 0, y: 0 };
+
+    // Mouse down handler for panning
+    const handleMouseDown = (e: MouseEvent) => {
+      // Only start panning if clicking on the canvas or grid, not on cards/connections
+      if (e.target === canvas || (e.target as HTMLElement).classList.contains('canvas-grid')) {
+        isPanning = true;
+        lastPosition = { x: e.clientX, y: e.clientY };
+        canvas.style.cursor = 'grabbing';
+        e.preventDefault();
       }
-    }
-  };
+    };
 
-  // Обработка перемещения холста при движении мыши
-  const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    if (isPanning) {
-      const deltaX = e.clientX - startPanPosition.x;
-      const deltaY = e.clientY - startPanPosition.y;
+    // Mouse move handler for panning
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isPanning) {
+        const dx = e.clientX - lastPosition.x;
+        const dy = e.clientY - lastPosition.y;
 
-      setCanvasOffset({
-        x: canvasOffset.x + deltaX,
-        y: canvasOffset.y + deltaY
-      });
+        setPanOffset(prev => ({
+          x: prev.x + dx,
+          y: prev.y + dy
+        }));
 
-      setStartPanPosition({ x: e.clientX, y: e.clientY });
-      e.preventDefault();
-    }
+        lastPosition = { x: e.clientX, y: e.clientY };
+        e.preventDefault();
+      }
 
-    // Код для обработки создания соединения
-    if (isCreatingEdge) {
-      const canvasRect = canvasRef.current?.getBoundingClientRect();
-      if (canvasRect) {
-        // Преобразуем координаты курсора в координаты холста
-        const x = (e.clientX - canvasRect.left - canvasOffset.x) / scale;
-        const y = (e.clientY - canvasRect.top - canvasOffset.y) / scale;
+      // Edge creation logic
+      if (isCreatingEdge) {
+        const rect = canvas.getBoundingClientRect();
+        const x = (e.clientX - rect.left - panOffset.x) / scale;
+        const y = (e.clientY - rect.top - panOffset.y) / scale;
         setTempEdgeEnd({ x, y });
       }
-    }
-  };
+    };
 
-  // Обработка окончания перемещения холста
-  const handleCanvasMouseUp = () => {
-    if (isPanning) {
-      setIsPanning(false);
-
-      // Сброс стиля курсора
-      if (canvasRef.current) {
-        canvasRef.current.style.cursor = 'grab';
+    // Mouse up handler to stop panning
+    const handleMouseUp = () => {
+      if (isPanning) {
+        isPanning = false;
+        canvas.style.cursor = 'grab';
       }
-    }
-  };
+    };
 
-  // Обработка выхода курсора мыши за пределы холста
-  const handleMouseLeave = () => {
-    if (isPanning) {
-      setIsPanning(false);
-
-      // Сброс стиля курсора
-      if (canvasRef.current) {
-        canvasRef.current.style.cursor = 'grab';
+    // Mouse leave handler to stop panning if cursor leaves canvas
+    const handleMouseLeave = () => {
+      if (isPanning) {
+        isPanning = false;
+        canvas.style.cursor = 'grab';
       }
-    }
-  };
+    };
 
-  // Handle zoom
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
+    // Wheel handler for zooming
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
 
-    const canvasRect = canvasRef.current?.getBoundingClientRect();
-    if (!canvasRect) return;
+      const rect = canvas.getBoundingClientRect();
+      const mouseX = e.clientX - rect.left;
+      const mouseY = e.clientY - rect.top;
 
-    // Obtain cursor position relative to the viewport
-    const mouseX = e.clientX;
-    const mouseY = e.clientY;
+      // Calculate point on canvas under the mouse in scaled coordinates
+      const pointX = (mouseX - panOffset.x) / scale;
+      const pointY = (mouseY - panOffset.y) / scale;
 
-    // Calculate cursor position relative to the scaled and translated canvas
-    const pointX = (mouseX - canvasOffset.x) / scale;
-    const pointY = (mouseY - canvasOffset.y) / scale;
+      // Calculate new scale
+      const delta = e.deltaY < 0 ? 0.1 : -0.1;
+      const newScale = Math.min(Math.max(scale + delta, 0.1), 3);
 
-    // Calculate new scale
-    const delta = e.deltaY < 0 ? 0.1 : -0.1;
-    const newScale = Math.min(Math.max(scale + delta, 0.1), 3);
+      // Calculate new offsets to zoom around mouse position
+      const newOffsetX = mouseX - pointX * newScale;
+      const newOffsetY = mouseY - pointY * newScale;
 
-    // Calculate new offset to zoom around cursor position
-    const newOffsetX = mouseX - pointX * newScale;
-    const newOffsetY = mouseY - pointY * newScale;
+      setScale(newScale);
+      setPanOffset({ x: newOffsetX, y: newOffsetY });
+    };
 
-    setScale(newScale);
-    setCanvasOffset({ x: newOffsetX, y: newOffsetY });
-  };
+    // Add event listeners
+    canvas.addEventListener('mousedown', handleMouseDown);
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    canvas.addEventListener('mouseleave', handleMouseLeave);
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+
+    // Clean up event listeners on unmount
+    return () => {
+      canvas.removeEventListener('mousedown', handleMouseDown);
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mouseup', handleMouseUp);
+      canvas.removeEventListener('mouseleave', handleMouseLeave);
+      canvas.removeEventListener('wheel', handleWheel);
+    };
+  }, [scale, panOffset, isCreatingEdge, edgeStartCard]);
 
   // Start edge creation
   const handleStartEdge = (cardId: number) => {
@@ -127,19 +132,25 @@ export const Canvas: React.FC = () => {
 
   // Add a new card
   const handleAddCard = () => {
-    // Calculate center of visible canvas
-    const canvasRect = canvasRef.current?.getBoundingClientRect();
-    if (!canvasRect) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const centerX = (canvasRect.width / 2 - canvasOffset.x) / scale;
-    const centerY = (canvasRect.height / 2 - canvasOffset.y) / scale;
+    const rect = canvas.getBoundingClientRect();
+    const centerX = (rect.width / 2 - panOffset.x) / scale;
+    const centerY = (rect.height / 2 - panOffset.y) / scale;
 
     editor.addCard({
       position: { x: centerX, y: centerY }
     });
   };
 
-  // Render connections between cards
+  // Reset view to initial state
+  const handleResetView = () => {
+    setScale(1);
+    setPanOffset({ x: 0, y: 0 });
+  };
+
+  // Render connections
   const renderConnections = () => {
     return editor.scene.edges.map(edge => {
       const sourceCard = editor.scene.cards.find(c => c.id === edge.source);
@@ -165,10 +176,7 @@ export const Canvas: React.FC = () => {
     <div className="canvas-container">
       <div className="canvas-toolbar">
         <button onClick={handleAddCard}>+ Add Card</button>
-        <button onClick={() => {
-          setScale(1);
-          setCanvasOffset({ x: 0, y: 0 });
-        }}>Reset View</button>
+        <button onClick={handleResetView}>Reset View</button>
         {isCreatingEdge && (
           <>
             <span>Creating edge... Click on target card</span>
@@ -182,14 +190,9 @@ export const Canvas: React.FC = () => {
 
       <div
         ref={canvasRef}
-        className={`canvas ${isPanning ? 'dragging' : ''}`}
-        onMouseDown={handleCanvasMouseDown}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseUp={handleCanvasMouseUp}
-        onMouseLeave={handleMouseLeave}
-        onWheel={handleWheel}
+        className="canvas"
         style={{
-          transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px) scale(${scale})`
+          transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`
         }}
       >
         {/* Grid background */}
@@ -225,12 +228,11 @@ export const Canvas: React.FC = () => {
   );
 };
 
-// Temporary connection component for edge creation
+// Temporary connection component
 const TempConnection: React.FC<{
   sourceCard: Card;
   endPosition: { x: number; y: number };
 }> = ({ sourceCard, endPosition }) => {
-  // Implementation of temporary connection line
   return (
     <svg className="temp-connection">
       <line
