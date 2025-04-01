@@ -10,48 +10,76 @@ export const Canvas: React.FC = () => {
   const editor = useEditor();
   const canvasRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
-  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
+  const [startPanPosition, setStartPanPosition] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
   const [isCreatingEdge, setIsCreatingEdge] = useState(false);
   const [edgeStartCard, setEdgeStartCard] = useState<number | null>(null);
   const [tempEdgeEnd, setTempEdgeEnd] = useState({ x: 0, y: 0 });
 
-  // Handle canvas pan (drag)
-  const handleMouseDown = (e: MouseEvent) => {
-    // Проверяем, что клик был на холсте, а не на карточке или другом элементе
+  // Обработка начала перемещения холста
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    // Убедимся, что это клик на самом холсте, а не на карточке или другом интерактивном элементе
     if (e.target === canvasRef.current || (e.target as HTMLElement).classList.contains('canvas-grid')) {
-      setIsDraggingCanvas(true);
-      setStartPos({ x: e.clientX, y: e.clientY });
-      e.preventDefault(); // Предотвращаем выделение текста и другие действия
+      setIsPanning(true);
+      setStartPanPosition({ x: e.clientX, y: e.clientY });
+      e.preventDefault();
+
+      // Установка стиля курсора через DOM для гарантированного обновления
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'grabbing';
+      }
     }
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDraggingCanvas) {
-      // Вычисляем дельту перемещения
-      const dx = e.clientX - startPos.x;
-      const dy = e.clientY - startPos.y;
+  // Обработка перемещения холста при движении мыши
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (isPanning) {
+      const deltaX = e.clientX - startPanPosition.x;
+      const deltaY = e.clientY - startPanPosition.y;
 
-      // Обновляем позицию
-      setOffset({
-        x: offset.x + dx / scale,
-        y: offset.y + dy / scale
+      setCanvasOffset({
+        x: canvasOffset.x + deltaX,
+        y: canvasOffset.y + deltaY
       });
 
-      // Обновляем стартовую позицию для следующего движения
-      setStartPos({ x: e.clientX, y: e.clientY });
+      setStartPanPosition({ x: e.clientX, y: e.clientY });
       e.preventDefault();
     }
 
-    // Остальной код для временного соединения
+    // Код для обработки создания соединения
     if (isCreatingEdge) {
-      setTempEdgeEnd({ x: (e.clientX - offset.x * scale) / scale, y: (e.clientY - offset.y * scale) / scale });
+      const canvasRect = canvasRef.current?.getBoundingClientRect();
+      if (canvasRect) {
+        // Преобразуем координаты курсора в координаты холста
+        const x = (e.clientX - canvasRect.left - canvasOffset.x) / scale;
+        const y = (e.clientY - canvasRect.top - canvasOffset.y) / scale;
+        setTempEdgeEnd({ x, y });
+      }
     }
   };
-  const handleMouseUp = () => {
-    if (isDraggingCanvas) {
-      setIsDraggingCanvas(false);
+
+  // Обработка окончания перемещения холста
+  const handleCanvasMouseUp = () => {
+    if (isPanning) {
+      setIsPanning(false);
+
+      // Сброс стиля курсора
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'grab';
+      }
+    }
+  };
+
+  // Обработка выхода курсора мыши за пределы холста
+  const handleMouseLeave = () => {
+    if (isPanning) {
+      setIsPanning(false);
+
+      // Сброс стиля курсора
+      if (canvasRef.current) {
+        canvasRef.current.style.cursor = 'grab';
+      }
     }
   };
 
@@ -62,21 +90,26 @@ export const Canvas: React.FC = () => {
     const canvasRect = canvasRef.current?.getBoundingClientRect();
     if (!canvasRect) return;
 
-    // Получаем позицию курсора относительно canvas
-    const mouseX = (e.clientX - canvasRect.left) / scale;
-    const mouseY = (e.clientY - canvasRect.top) / scale;
+    // Obtain cursor position relative to the viewport
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
 
-    // Вычисляем новый масштаб
+    // Calculate cursor position relative to the scaled and translated canvas
+    const pointX = (mouseX - canvasOffset.x) / scale;
+    const pointY = (mouseY - canvasOffset.y) / scale;
+
+    // Calculate new scale
     const delta = e.deltaY < 0 ? 0.1 : -0.1;
     const newScale = Math.min(Math.max(scale + delta, 0.1), 3);
 
-    // Обновляем смещение, чтобы сохранить позицию под курсором
-    const newOffsetX = offset.x - (mouseX * (newScale - scale));
-    const newOffsetY = offset.y - (mouseY * (newScale - scale));
+    // Calculate new offset to zoom around cursor position
+    const newOffsetX = mouseX - pointX * newScale;
+    const newOffsetY = mouseY - pointY * newScale;
 
     setScale(newScale);
-    setOffset({ x: newOffsetX, y: newOffsetY });
+    setCanvasOffset({ x: newOffsetX, y: newOffsetY });
   };
+
   // Start edge creation
   const handleStartEdge = (cardId: number) => {
     setIsCreatingEdge(true);
@@ -95,8 +128,11 @@ export const Canvas: React.FC = () => {
   // Add a new card
   const handleAddCard = () => {
     // Calculate center of visible canvas
-    const centerX = -offset.x / scale + window.innerWidth / 2 / scale;
-    const centerY = -offset.y / scale + window.innerHeight / 2 / scale;
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    if (!canvasRect) return;
+
+    const centerX = (canvasRect.width / 2 - canvasOffset.x) / scale;
+    const centerY = (canvasRect.height / 2 - canvasOffset.y) / scale;
 
     editor.addCard({
       position: { x: centerX, y: centerY }
@@ -129,7 +165,10 @@ export const Canvas: React.FC = () => {
     <div className="canvas-container">
       <div className="canvas-toolbar">
         <button onClick={handleAddCard}>+ Add Card</button>
-        <button onClick={() => setScale(1)}>Reset Zoom</button>
+        <button onClick={() => {
+          setScale(1);
+          setCanvasOffset({ x: 0, y: 0 });
+        }}>Reset View</button>
         {isCreatingEdge && (
           <>
             <span>Creating edge... Click on target card</span>
@@ -142,17 +181,17 @@ export const Canvas: React.FC = () => {
       </div>
 
       <div
-  ref={canvasRef}
-  className={`canvas ${isDraggingCanvas ? 'dragging' : ''}`}
-  onMouseDown={handleMouseDown}
-  onMouseMove={handleMouseMove}
-  onMouseUp={handleMouseUp}
-  onMouseLeave={handleMouseUp} /* Добавляем обработку выхода курсора */
-  onWheel={handleWheel}
-  style={{
-    transform: `scale(${scale}) translate(${offset.x}px, ${offset.y}px)`
-  }}
->
+        ref={canvasRef}
+        className={`canvas ${isPanning ? 'dragging' : ''}`}
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleCanvasMouseUp}
+        onMouseLeave={handleMouseLeave}
+        onWheel={handleWheel}
+        style={{
+          transform: `translate(${canvasOffset.x}px, ${canvasOffset.y}px) scale(${scale})`
+        }}
+      >
         {/* Grid background */}
         <div className="canvas-grid"></div>
 
