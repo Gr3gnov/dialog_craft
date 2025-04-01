@@ -1,0 +1,145 @@
+/* src/renderer/components/DraggableCard/DraggableCard.css */
+.draggable-card {
+    position: absolute;
+    width: 300px;
+    height: 80px;
+    background-color: #ffffff;
+    border: 1px solid rgba(126, 126, 126, 0.8);
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    padding: 10px;
+    cursor: move;
+    z-index: 10;
+    user-select: none;
+  }
+
+  .draggable-card.selected {
+    box-shadow: 0 0 0 2px #324EFF;
+    z-index: 20;
+  }
+
+  .draggable-card.narrator {
+    background-color: #f8f9fa;
+  }
+
+  .draggable-card.thought {
+    border-style: dashed;
+  }
+
+  .card-content {
+    display: flex;
+    width: 100%;
+    align-items: flex-start;
+  }
+
+  .card-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #D9D9D9;
+    margin-right: 10px;
+    flex-shrink: 0;
+  }
+
+  .card-text-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .card-title {
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 12px;
+    color: #000000;
+    margin-bottom: 3px;
+  }
+
+  .card-text {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+    font-size: 8px;
+    line-height: 10px;
+    color: #000000;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+
+  .card-entry-point {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    left: 15px;
+    top: -5px;
+    background-color: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.8);
+    border-radius: 50%;
+    z-index: 11;
+    cursor: pointer;
+  }
+
+  .card-exit-point {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    right: 15px;
+    bottom: -5px;
+    background-color: #324EFF;
+    border-radius: 50%;
+    z-index: 11;
+    cursor: pointer;
+  }
+
+  .card-edge-connectors {
+    position: absolute;
+    left: 10px;
+    bottom: -20px;
+    display: flex;
+    gap: 19px;
+    z-index: 11;
+  }
+
+  .edge-connector-button {
+    width: 14px;
+    height: 14px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .edge-connector-button.red {
+    background-color: #D80000;
+  }
+
+  .edge-connector-button.yellow {
+    background-color: #FFD900;
+  }
+
+  .edge-connector-button.cyan {
+    background-color: #00E5FF;
+  }
+
+  .edge-connector-button.green {
+    background-color: #00FF2F;
+  }
+
+  .edge-connector-button.black {
+    background-color: #000000;
+  }
+
+  .connector-inner {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #FFFFFF;
+  }

@@ -1,17 +1,13 @@
 // src/renderer/layouts/MainLayout.tsx
 import React, { useState } from 'react';
-import { Workspace } from '../components/Workspace';
-import { PropertyPanel } from '../components/PropertyPanel';
-import { CytoscapeService } from '../../services/CytoscapeService';
+import { Canvas } from '../components/Canvas/Canvas';
+import { PropertyPanel } from '../components/PropertyPanel/PropertyPanel';
 import { GraphService } from '../../services/GraphService';
 import { EditorProvider } from '../contexts/EditorContext';
 import './MainLayout.css';
 
-// Create service instances
+// Create service instance
 const graphService = new GraphService();
-const cytoscapeService = new CytoscapeService();
-
-// Добавьте эту функцию в MainLayout.tsx перед определением компонента MainLayout
 
 // Add some test cards and connections
 const initializeTestData = () => {
@@ -73,6 +69,7 @@ const initializeTestData = () => {
 
 // Initialize test data
 initializeTestData();
+
 export const MainLayout: React.FC = () => {
   const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
 
@@ -123,7 +120,7 @@ export const MainLayout: React.FC = () => {
           </div>
         </header>
         <main className="main-content">
-          <Workspace cytoscapeService={cytoscapeService} />
+          <Canvas />
           <PropertyPanel />
         </main>
       </div>
