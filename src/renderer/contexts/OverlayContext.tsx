@@ -49,5 +49,15 @@ export const NodeOverlay: React.FC<{ nodeId: string; children: ReactNode }> = ({
   const { getOverlayContainer } = useOverlay();
   const container = getOverlayContainer(`overlay-${nodeId}`);
 
-  return container ? createPortal(children, container) : null;
+  return container ? createPortal(
+    <div className="node-overlay-content" style={{
+      pointerEvents: 'none', // By default, no pointer events
+      position: 'relative',
+      width: '100%',
+      height: '100%'
+    }}>
+      {children}
+    </div>,
+    container
+  ) : null;
 };

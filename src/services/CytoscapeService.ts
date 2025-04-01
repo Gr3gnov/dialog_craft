@@ -187,7 +187,7 @@ export class CytoscapeService {
       overlay.style.top = `${position.y - dimensions.height/2}px`;
       overlay.style.width = `${dimensions.width}px`;
       overlay.style.height = `${dimensions.height}px`;
-      overlay.style.pointerEvents = 'none'; // Initially disable pointer events
+      overlay.style.pointerEvents = 'none'; // Make sure the base div doesn't interfere with Cytoscape interactions
 
       this.container?.appendChild(overlay);
 
