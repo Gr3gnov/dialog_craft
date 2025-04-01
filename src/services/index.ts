@@ -4,4 +4,3 @@ export { FileService } from './FileService';
 export { AutosaveService } from './AutosaveService';
 export { ExportImportService } from './ExportImportService';
 export { LoggerService } from './LoggerService';
-export { CytoscapeService } from './CytoscapeService';
