@@ -14,36 +14,45 @@ export const Canvas: React.FC = () => {
   const [isCreatingEdge, setIsCreatingEdge] = useState(false);
   const [edgeStartCard, setEdgeStartCard] = useState<number | null>(null);
   const [tempEdgeEnd, setTempEdgeEnd] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
 
   // Add DOM event listeners for panning and zooming
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    let isPanning = false;
-    let lastX = 0, lastY = 0;
-
     const handleMouseDown = (e: MouseEvent) => {
-      // Simple check - click directly on canvas or grid
-      if (e.target === canvas || (e.target as HTMLElement).classList.contains('canvas-grid')) {
-        isPanning = true;
-        lastX = e.clientX;
-        lastY = e.clientY;
+      // Check if the click is on interactive elements that should not trigger panning
+      const target = e.target as HTMLElement;
+
+      // Consider only card elements and toolbar buttons as interactive
+      const isInteractiveElement =
+        target.closest('.draggable-card') ||
+        target.closest('.edge-connector-button') ||
+        target.closest('.card-entry-point') ||
+        target.closest('.card-exit-point') ||
+        target.closest('.canvas-toolbar') ||
+        // Для connection учитываем только клик по тексту или узлу, но не по SVG-контейнеру
+        target.closest('.connection-label');
+
+      if (!isInteractiveElement) {
+        console.log("Panning started", target);
+        setIsPanning(true);
+        setLastMousePosition({ x: e.clientX, y: e.clientY });
         canvas.style.cursor = 'grabbing';
-        console.log("Panning started", { isPanning });
+      } else {
+        console.log("Click on interactive element, not starting panning", target);
       }
     };
 
     const handleMouseMove = (e: MouseEvent) => {
       if (!isPanning) return;
 
-      const dx = e.clientX - lastX;
-      const dy = e.clientY - lastY;
-      lastX = e.clientX;
-      lastY = e.clientY;
+      const dx = e.clientX - lastMousePosition.x;
+      const dy = e.clientY - lastMousePosition.y;
 
-      console.log("Panning move", { dx, dy, isPanning });
-
+      setLastMousePosition({ x: e.clientX, y: e.clientY });
       setPanOffset(prev => ({
         x: prev.x + dx,
         y: prev.y + dy
@@ -52,15 +61,15 @@ export const Canvas: React.FC = () => {
 
     const handleMouseUp = () => {
       if (isPanning) {
-        isPanning = false;
+        setIsPanning(false);
         canvas.style.cursor = 'grab';
         console.log("Panning ended");
       }
     };
 
-    // Добавим слушатели напрямую к элементу
+    // Add event listeners
     canvas.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('mousemove', handleMouseMove); // Используем document для улавливания всех движений
+    document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
 
     return () => {
@@ -68,7 +77,8 @@ export const Canvas: React.FC = () => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, []);
+  }, [isPanning, lastMousePosition]);
+
   // Start edge creation
   const handleStartEdge = (cardId: number) => {
     setIsCreatingEdge(true);
@@ -143,13 +153,13 @@ export const Canvas: React.FC = () => {
       </div>
 
       <div
-  ref={canvasRef}
-  className="canvas"
-  style={{
-    transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`,
-    transformOrigin: '0 0' // Важно указать, чтобы масштабирование происходило от верхнего левого угла
-  }}
->
+        ref={canvasRef}
+        className="canvas"
+        style={{
+          transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`,
+          transformOrigin: '0 0'
+        }}
+      >
         {/* Grid background */}
         <div className="canvas-grid"></div>
 
