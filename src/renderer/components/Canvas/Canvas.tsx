@@ -31,19 +31,25 @@ export const Canvas: React.FC = () => {
       const dx = e.clientX - startPos.x;
       const dy = e.clientY - startPos.y;
 
+      // Обновляем смещение
       setOffset({
-        x: offset.x + dx,
-        y: offset.y + dy
+        x: offset.x + dx / scale, // Учитываем масштаб при смещении
+        y: offset.y + dy / scale
       });
 
       setStartPos({ x: e.clientX, y: e.clientY });
     }
 
     if (isCreatingEdge) {
-      setTempEdgeEnd({ x: e.clientX, y: e.clientY });
+      // Координаты для временного соединения также должны учитывать смещение и масштаб
+      const canvasRect = canvasRef.current?.getBoundingClientRect();
+      if (canvasRect) {
+        const x = (e.clientX - canvasRect.left) / scale - offset.x;
+        const y = (e.clientY - canvasRect.top) / scale - offset.y;
+        setTempEdgeEnd({ x, y });
+      }
     }
   };
-
   const handleMouseUp = () => {
     setIsDraggingCanvas(false);
   };
@@ -51,11 +57,25 @@ export const Canvas: React.FC = () => {
   // Handle zoom
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
+
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    if (!canvasRect) return;
+
+    // Получаем позицию курсора относительно canvas
+    const mouseX = (e.clientX - canvasRect.left) / scale;
+    const mouseY = (e.clientY - canvasRect.top) / scale;
+
+    // Вычисляем новый масштаб
     const delta = e.deltaY < 0 ? 0.1 : -0.1;
     const newScale = Math.min(Math.max(scale + delta, 0.1), 3);
-    setScale(newScale);
-  };
 
+    // Обновляем смещение, чтобы сохранить позицию под курсором
+    const newOffsetX = offset.x - (mouseX * (newScale - scale));
+    const newOffsetY = offset.y - (mouseY * (newScale - scale));
+
+    setScale(newScale);
+    setOffset({ x: newOffsetX, y: newOffsetY });
+  };
   // Start edge creation
   const handleStartEdge = (cardId: number) => {
     setIsCreatingEdge(true);
