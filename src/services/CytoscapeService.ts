@@ -235,7 +235,7 @@ export class CytoscapeService {
 
         connectors.appendChild(button);
       });
-
+      if (!this.cy || !this.container) return;
       overlay.appendChild(connectors);
       this.container.appendChild(overlay);
     });
@@ -318,7 +318,7 @@ export class CytoscapeService {
   applyLayout(): void {
     if (!this.cy) return;
 
-    this.cy.layout({
+    const layout = this.cy.layout({
       name: 'dagre',
       // Correct parameters for dagre layout
       rankDir: 'TB', // Top to bottom layout
@@ -326,7 +326,9 @@ export class CytoscapeService {
       spacingFactor: 1.5,
       animate: true,
       animationDuration: 500
-    } as any).run();
+    } as any);
+
+    layout.run();
 
     // Update overlays after layout changes
     setTimeout(() => this.addNodeOverlays(), 600);
