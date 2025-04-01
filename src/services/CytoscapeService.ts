@@ -187,60 +187,25 @@ export class CytoscapeService {
       overlay.style.top = `${position.y - dimensions.height/2}px`;
       overlay.style.width = `${dimensions.width}px`;
       overlay.style.height = `${dimensions.height}px`;
+      overlay.style.pointerEvents = 'none'; // Initially disable pointer events
 
-      // Entry point
-      const entryPoint = document.createElement('div');
-      entryPoint.className = 'cy-node-entry-point';
-      entryPoint.style.position = 'absolute';
-      entryPoint.style.left = '15px';
-      entryPoint.style.top = '-5px';
-      overlay.appendChild(entryPoint);
+      this.container?.appendChild(overlay);
 
-      // Exit point
-      const exitPoint = document.createElement('div');
-      exitPoint.className = 'cy-node-exit-point';
-      exitPoint.style.position = 'absolute';
-      exitPoint.style.right = '15px';
-      exitPoint.style.bottom = '-5px';
-      overlay.appendChild(exitPoint);
-
-      // Connectors (buttons)
-      const connectors = document.createElement('div');
-      connectors.className = 'cy-node-connectors';
-      connectors.style.position = 'absolute';
-      connectors.style.left = '10px';
-      connectors.style.bottom = '-20px';
-      connectors.style.display = 'flex';
-      connectors.style.gap = '19px';
-
-      // Create 5 buttons with different colors
-      const colors = ['red', 'yellow', 'cyan', 'green', 'black'];
-      colors.forEach(color => {
-        const button = document.createElement('button');
-        button.className = `cy-connector-button ${color}`;
-        button.title = 'Create connection';
-
-        const inner = document.createElement('div');
-        inner.className = 'cy-connector-inner';
-        button.appendChild(inner);
-
-        // Add event handler for starting edge creation
-        button.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const nodeId = parseInt(node.id());
-          if (this.startEdgeCreationCallback) {
-            this.startEdgeCreationCallback(nodeId);
-          }
-        });
-
-        connectors.appendChild(button);
-      });
-      if (!this.cy || !this.container) return;
-      overlay.appendChild(connectors);
-      this.container.appendChild(overlay);
+      // If we have a registerOverlay callback, call it
+      if (this.registerOverlayCallback) {
+        this.registerOverlayCallback(node.id().toString(), overlay);
+      }
     });
   }
-
+  private registerOverlayCallback: ((id: string, element: HTMLElement) => void) | null = null;
+  private unregisterOverlayCallback: ((id: string) => void) | null = null;
+  setOverlayCallbacks(
+    registerCallback: (id: string, element: HTMLElement) => void,
+    unregisterCallback: (id: string) => void
+  ): void {
+    this.registerOverlayCallback = registerCallback;
+    this.unregisterOverlayCallback = unregisterCallback;
+  }
   /**
    * Render graph with cards and edges
    */

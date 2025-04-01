@@ -2,6 +2,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CytoscapeService } from '../../../services/CytoscapeService';
 import { useEditor } from '../../contexts/EditorContext';
+import { OverlayProvider, useOverlay } from '../../contexts/OverlayContext';
+import { CardNodeOverlay } from '../CardNode/CardNodeOverlay';
 import './Workspace.css';
 import '../../styles/cytoscape-custom.css';
 
@@ -9,16 +11,20 @@ interface WorkspaceProps {
   cytoscapeService: CytoscapeService;
 }
 
-export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
+const WorkspaceComponent: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
   const editor = useEditor();
   const cyContainerRef = useRef<HTMLDivElement>(null);
   const [isEdgeCreationMode, setIsEdgeCreationMode] = useState(false);
   const [sourceNodeId, setSourceNodeId] = useState<number | null>(null);
+  const { registerOverlay, unregisterOverlay } = useOverlay();
 
   // Initialize Cytoscape when component mounts
   useEffect(() => {
     if (cyContainerRef.current) {
       cytoscapeService.initialize(cyContainerRef.current);
+
+      // Register overlay callbacks
+      cytoscapeService.setOverlayCallbacks(registerOverlay, unregisterOverlay);
 
       // Pass cards and connections from current scene to Cytoscape
       cytoscapeService.renderGraph(editor.scene.cards, editor.scene.edges);
@@ -39,7 +45,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
         editor.updateCard(id, { position });
       });
 
-      // Добавить обработчик для начала создания связи
+      // Add handler for starting edge creation
       cytoscapeService.onStartEdgeCreation((sourceId) => {
         setIsEdgeCreationMode(true);
         setSourceNodeId(sourceId);
@@ -50,7 +56,8 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
       // Cleanup when component unmounts
       // (if necessary)
     };
-  }, [cytoscapeService]);
+  }, [cytoscapeService, editor, registerOverlay, unregisterOverlay]);
+
   // Update graph when scene changes
   useEffect(() => {
     cytoscapeService.renderGraph(editor.scene.cards, editor.scene.edges);
@@ -61,7 +68,7 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
     } else if (editor.selectedEdgeId !== null) {
       cytoscapeService.selectElement('edge', editor.selectedEdgeId);
     }
-  }, [editor.scene, editor.selectedCardId, editor.selectedEdgeId]);
+  }, [editor.scene, editor.selectedCardId, editor.selectedEdgeId, cytoscapeService]);
 
   // Handler for starting edge creation
   const handleStartEdgeCreation = (sourceId: number) => {
@@ -138,7 +145,25 @@ export const Workspace: React.FC<WorkspaceProps> = ({ cytoscapeService }) => {
       <div
         ref={cyContainerRef}
         className="cytoscape-container"
-      ></div>
+      >
+        {/* Render card overlays */}
+        {editor.scene.cards.map(card => (
+          <CardNodeOverlay
+            key={card.id}
+            card={card}
+            selected={editor.selectedCardId === card.id}
+            onSelect={editor.setSelectedCard}
+            onStartEdge={handleStartEdgeCreation}
+          />
+        ))}
+      </div>
     </div>
   );
 };
+
+// Wrap with OverlayProvider
+export const Workspace: React.FC<WorkspaceProps> = (props) => (
+  <OverlayProvider>
+    <WorkspaceComponent {...props} />
+  </OverlayProvider>
+);
