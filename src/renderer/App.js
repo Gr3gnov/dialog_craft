@@ -31,7 +31,6 @@ function App() {
 
   // Update a card
   const handleUpdateCard = (updatedCard) => {
-    console.log('Updating card:', updatedCard);
     setCards(cards.map(card =>
       card.id === updatedCard.id ? updatedCard : card
     ));

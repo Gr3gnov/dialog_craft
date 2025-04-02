@@ -30,18 +30,24 @@ const Canvas = ({ cards, onCardSelect, selectedCardId, onUpdateCard }) => {
   // Handle mouse move for card dragging or canvas panning
   const handleMouseMove = (e) => {
     if (dragging) {
-      // Удалены лишние логи
+      // Calculate position in canvas coordinates
+      const canvasRect = canvasRef.current.getBoundingClientRect();
+      const mouseX = e.clientX - canvasRect.left;
+      const mouseY = e.clientY - canvasRect.top;
 
-      // Calculate position relative to the canvas
+      // Transform to scaled canvas coordinates
+      const canvasX = (mouseX - canvasOffset.x) / scale;
+      const canvasY = (mouseY - canvasOffset.y) / scale;
+
+      // Calculate new position accounting for drag offset
       const newPosition = {
-        x: (e.clientX - dragOffset.x) / scale - canvasOffset.x / scale,
-        y: (e.clientY - dragOffset.y) / scale - canvasOffset.y / scale
+        x: canvasX - dragOffset.x / scale,
+        y: canvasY - dragOffset.y / scale
       };
 
-      // Update the card position
+      // Update card position
       const updatedCard = cards.find(card => card.id === dragging);
       if (updatedCard) {
-        // Удалены лишние логи
         onUpdateCard({
           ...updatedCard,
           position: newPosition
@@ -63,7 +69,6 @@ const Canvas = ({ cards, onCardSelect, selectedCardId, onUpdateCard }) => {
       });
     }
   };
-
   // Handle mouse up to end dragging or panning
   const handleMouseUp = () => {
     if (dragging) {
