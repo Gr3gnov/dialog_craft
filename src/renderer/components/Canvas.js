@@ -30,23 +30,18 @@ const Canvas = ({ cards, onCardSelect, selectedCardId, onUpdateCard }) => {
   // Handle mouse move for card dragging or canvas panning
   const handleMouseMove = (e) => {
     if (dragging) {
-      // Card dragging - add logging
-      console.log('Dragging card', dragging);
-      console.log('Mouse position:', { x: e.clientX, y: e.clientY });
-      console.log('Drag offset:', dragOffset);
+      // Удалены лишние логи
 
-      // Calculate position relative to the canvas scale and offset
+      // Calculate position relative to the canvas
       const newPosition = {
         x: (e.clientX - dragOffset.x) / scale - canvasOffset.x / scale,
         y: (e.clientY - dragOffset.y) / scale - canvasOffset.y / scale
       };
 
-      console.log('New calculated position:', newPosition);
-
       // Update the card position
       const updatedCard = cards.find(card => card.id === dragging);
       if (updatedCard) {
-        console.log('Previous card position:', updatedCard.position);
+        // Удалены лишние логи
         onUpdateCard({
           ...updatedCard,
           position: newPosition
@@ -163,25 +158,13 @@ const Canvas = ({ cards, onCardSelect, selectedCardId, onUpdateCard }) => {
     };
   }, [dragging, dragOffset, cards, isPanning, panStart, canvasOffset, spacePressed, scale]);
 
-  // Handle the start of card dragging
   const handleCardDragStart = (id, offsetX, offsetY) => {
     if (!isPanning && !spacePressed) {
-      console.log('Start dragging card', id);
-      console.log('Original offset:', { offsetX, offsetY });
-
-      // Use correct offset considering scale
-      const scaledOffsetX = offsetX * scale;
-      const scaledOffsetY = offsetY * scale;
-
-      console.log('Scaled offset:', {
-        scaledOffsetX,
-        scaledOffsetY
-      });
-
+      // Удалены лишние логи
       setDragging(id);
       setDragOffset({
-        x: scaledOffsetX,
-        y: scaledOffsetY
+        x: offsetX,
+        y: offsetY
       });
     }
   };

@@ -21,10 +21,7 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
       const offsetX = e.clientX - rect.left;
       const offsetY = e.clientY - rect.top;
 
-      console.log('Card rect:', rect);
-      console.log('Mouse position at drag start:', { clientX: e.clientX, clientY: e.clientY });
-      console.log('Calculated offsets:', { offsetX, offsetY });
-
+      // Удалены лишние логи
       onDragStart(card.id, offsetX, offsetY);
     }
   };
