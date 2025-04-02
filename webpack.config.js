@@ -1,4 +1,4 @@
-// webpack.config.js
+// webpack.config.js - обновленная версия
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -8,7 +8,8 @@ module.exports = {
   target: 'electron-renderer',
   output: {
     path: path.resolve(__dirname, 'build'),
-    filename: 'bundle.js'
+    filename: 'bundle.js',
+    publicPath: './' // Важно для корректных путей
   },
   module: {
     rules: [
