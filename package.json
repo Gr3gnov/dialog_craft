@@ -4,10 +4,8 @@
   "description": "## About",
   "main": "src/main/main.js",
   "scripts": {
-    "start": "electron-forge start",
-    "package": "electron-forge package",
-    "make": "electron-forge make",
-    "dev": "concurrently \"webpack serve --mode development\" \"electron-forge start\"",
+    "start": "electron .",
+    "dev": "concurrently \"webpack serve --mode development\" \"electron .\"",
     "build": "webpack --mode production"
   },
   "repository": {

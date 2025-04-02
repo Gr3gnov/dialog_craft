@@ -33,11 +33,11 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: './public/index.html'
+      template: path.resolve(__dirname, 'public', 'index.html')
     })
   ],
   devServer: {
-    contentBase: path.join(__dirname, 'build'),
+    static: path.join(__dirname, 'build'),
     compress: true,
     port: 3000
   }

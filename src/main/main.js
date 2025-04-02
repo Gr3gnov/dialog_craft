@@ -17,12 +17,18 @@ function createWindow() {
     }
   });
 
-  // Load the index.html from webpack dev server or from build folder
-  mainWindow.loadURL(
-    isDev
-      ? 'http://localhost:3000'
-      : `file://${path.join(__dirname, '../../build/index.html')}`
-  );
+  // Добавим вывод для отладки
+  console.log("Starting application...");
+  console.log("isDev:", isDev);
+
+  // Загрузка HTML из правильного места
+  const startUrl = isDev
+    ? 'http://localhost:3000'
+    : `file://${path.join(__dirname, '../renderer/index.html')}`;
+
+  console.log("Loading URL:", startUrl);
+
+  mainWindow.loadURL(startUrl);
 
   // Open the DevTools in development mode
   if (isDev) {
@@ -50,5 +56,3 @@ app.on('activate', () => {
     createWindow();
   }
 });
-
-// IPC handlers for future communication between main and renderer
