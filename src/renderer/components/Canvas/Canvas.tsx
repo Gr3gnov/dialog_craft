@@ -18,6 +18,46 @@ export const Canvas: React.FC = () => {
   const [isPanning, setIsPanning] = useState(false);
   const [lastMousePosition, setLastMousePosition] = useState({ x: 0, y: 0 });
 
+  // Center cards whenever they change
+  useEffect(() => {
+    if (editor.scene.cards.length === 0) return;
+    centerCards();
+  }, []);
+
+  // Center all cards in view
+  const centerCards = () => {
+    const container = containerRef.current;
+    if (!container || editor.scene.cards.length === 0) return;
+
+    // Calculate bounds of all cards
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+    editor.scene.cards.forEach(card => {
+      minX = Math.min(minX, card.position.x);
+      minY = Math.min(minY, card.position.y);
+      maxX = Math.max(maxX, card.position.x + 300); // Add card width
+      maxY = Math.max(maxY, card.position.y + 80);  // Add card height
+    });
+
+    // Calculate center of cards
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+
+    // Calculate container center
+    const rect = container.getBoundingClientRect();
+    const containerCenterX = rect.width / 2;
+    const containerCenterY = rect.height / 2;
+
+    // Set pan offset to center the cards
+    setPanOffset({
+      x: containerCenterX - centerX,
+      y: containerCenterY - centerY
+    });
+
+    // Reset scale to 1
+    setScale(1);
+  };
+
   // Add DOM event listeners for panning and zooming
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -48,7 +88,7 @@ export const Canvas: React.FC = () => {
       // Update temp edge endpoint if creating an edge
       if (isCreatingEdge) {
         // Convert client coordinates to canvas coordinates
-        const rect = canvas.getBoundingClientRect();
+        const rect = container.getBoundingClientRect();
         const canvasX = (e.clientX - rect.left - panOffset.x) / scale;
         const canvasY = (e.clientY - rect.top - panOffset.y) / scale;
         setTempEdgeEnd({ x: canvasX, y: canvasY });
@@ -77,15 +117,19 @@ export const Canvas: React.FC = () => {
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
 
-      // Get mouse position relative to canvas
-      const rect = canvas.getBoundingClientRect();
+      // Get mouse position relative to canvas center
+      const rect = container.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
       const mouseY = e.clientY - rect.top;
 
       // Calculate zoom
       const zoomDirection = e.deltaY < 0 ? 1 : -1;
       const zoomFactor = 0.1; // Adjust zoom speed
-      const newScale = Math.max(0.1, Math.min(3, scale + zoomDirection * zoomFactor));
+
+      // Prevent zooming out too far - min scale 0.3
+      const newScale = Math.max(0.3, Math.min(3, scale + zoomDirection * zoomFactor));
+
+      if (newScale === scale) return; // No change needed
 
       // Calculate new pan offset to zoom toward mouse position
       const scaleChange = newScale / scale;
@@ -112,6 +156,17 @@ export const Canvas: React.FC = () => {
       container.removeEventListener('wheel', handleWheel);
     };
   }, [isPanning, lastMousePosition, scale, panOffset, isCreatingEdge]);
+
+  // Convert screen coordinates to canvas coordinates
+  const screenToCanvas = (screenX: number, screenY: number): { x: number, y: number } => {
+    const container = containerRef.current;
+    if (!container) return { x: 0, y: 0 };
+
+    return {
+      x: (screenX - panOffset.x) / scale,
+      y: (screenY - panOffset.y) / scale
+    };
+  };
 
   // Start edge creation
   const handleStartEdge = (cardId: number) => {
@@ -141,23 +196,17 @@ export const Canvas: React.FC = () => {
 
     const rect = container.getBoundingClientRect();
 
-    // Calculate center of the viewport in canvas coordinates
+    // Get center of the viewport
     const viewportCenterX = rect.width / 2;
     const viewportCenterY = rect.height / 2;
 
     // Convert to canvas coordinates
-    const canvasCenterX = (viewportCenterX - panOffset.x) / scale;
-    const canvasCenterY = (viewportCenterY - panOffset.y) / scale;
+    const canvasPos = screenToCanvas(viewportCenterX, viewportCenterY);
 
+    // Add the card at the center of the current view
     editor.addCard({
-      position: { x: canvasCenterX, y: canvasCenterY }
+      position: canvasPos
     });
-  };
-
-  // Reset view to initial state
-  const handleResetView = () => {
-    setScale(1);
-    setPanOffset({ x: 0, y: 0 });
   };
 
   // Render connections
@@ -189,7 +238,7 @@ export const Canvas: React.FC = () => {
     >
       <div className="canvas-toolbar">
         <button onClick={handleAddCard}>+ Add Card</button>
-        <button onClick={handleResetView}>Reset View</button>
+        <button onClick={centerCards}>Center View</button>
         <span>Zoom: {Math.round(scale * 100)}%</span>
         {isCreatingEdge && (
           <>
@@ -207,6 +256,7 @@ export const Canvas: React.FC = () => {
         className="canvas"
         style={{
           transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`,
+          transformOrigin: '0 0'
         }}
       >
         {/* Grid background */}

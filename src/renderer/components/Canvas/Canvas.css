@@ -8,11 +8,9 @@
 
 .canvas {
   position: absolute;
-  width: 10000px; /* Very large width */
-  height: 10000px; /* Very large height */
-  left: -5000px; /* Centered at origin */
-  top: -5000px; /* Centered at origin */
-  transform-origin: center;
+  width: 100%; /* Use 100% instead of fixed size */
+  height: 100%;
+  transform-origin: 0 0;
   background-color: #f5f5f5;
   cursor: grab;
 }
