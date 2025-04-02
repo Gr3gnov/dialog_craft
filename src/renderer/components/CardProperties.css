@@ -1,60 +1,135 @@
 /* src/renderer/components/CardProperties.css */
 .card-properties {
-    width: 250px;
-    background-color: #f5f5f5;
-    border-left: 1px solid #e0e0e0;
-    padding: 15px;
-    height: 100%;
-    overflow-y: auto;
-  }
+  width: 300px;
+  background-color: #fff;
+  border-left: 1px solid #e0e0e0;
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.05);
+}
 
-  .card-properties h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 16px;
-    color: #333;
-  }
+.card-properties h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 18px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
 
-  .form-group {
-    margin-bottom: 15px;
-  }
+.form-group {
+  margin-bottom: 15px;
+}
 
-  .form-group label {
-    display: block;
-    margin-bottom: 5px;
-    font-size: 14px;
-    font-weight: bold;
-  }
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #555;
+}
 
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 14px;
-  }
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+  background-color: #fafafa;
+}
 
-  .form-group textarea {
-    resize: vertical;
-  }
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #4CAF50;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
 
-  .save-button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-  }
+.form-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
 
-  .save-button:hover {
-    background-color: #2980b9;
-  }
+.form-group.checkbox {
+  display: flex;
+  align-items: center;
+}
 
-  .no-selection {
-    color: #888;
-    font-style: italic;
-  }
+.form-group.checkbox label {
+  display: flex;
+  align-items: center;
+  font-weight: normal;
+  margin-bottom: 0;
+  cursor: pointer;
+}
+
+.form-group.checkbox input {
+  width: auto;
+  margin-right: 8px;
+}
+
+.form-group.file-input {
+  position: relative;
+}
+
+.form-group.file-input .file-path {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.form-group.file-input .browse-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.save-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.save-button:hover {
+  background-color: #45a049;
+}
+
+.field-group {
+  border: 1px solid #eee;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+}
+
+.field-group h4 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  font-size: 15px;
+  color: #333;
+}
+
+.file-input-container {
+  display: flex;
+  align-items: center;
+}
+
+.file-input-container input {
+  flex: 1;
+  margin-right: 8px;
+}

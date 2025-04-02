@@ -21,7 +21,6 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
       const offsetX = e.clientX - rect.left;
       const offsetY = e.clientY - rect.top;
 
-      // Удалены лишние логи
       onDragStart(card.id, offsetX, offsetY);
     }
   };
@@ -31,15 +30,21 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
     onDragEnd();
   };
 
+  // Determine card type classes
+  const cardClasses = [
+    'dialog-card',
+    isSelected ? 'selected' : '',
+    card.is_narrator ? 'narrator' : '',
+    card.is_thought ? 'thought' : ''
+  ].filter(Boolean).join(' ');
+
   return (
     <div
       ref={cardRef}
-      className={`dialog-card ${isSelected ? 'selected' : ''} ${card.type === 'narrator' ? 'narrator' : ''}`}
+      className={cardClasses}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
-        // Don't apply scale here, it's handled by the parent
-        transform: 'translate(0, 0)'  // Reset any transforms
       }}
       onClick={handleClick}
       onMouseDown={handleDragStart}
@@ -48,8 +53,16 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
       <div className="card-header">
         <div className="card-title">{card.title || 'Untitled'}</div>
       </div>
-      <div className="card-content">
-        {card.text || 'Empty dialog...'}
+      <div className="card-body">
+        {card.portrait && (
+          <div className="card-portrait">
+            <img src={card.portrait} alt="Character" />
+          </div>
+        )}
+        <div className="card-content">
+          {card.character_name && <div className="character-name">{card.character_name}</div>}
+          <div className="card-text">{card.text || 'Empty dialog...'}</div>
+        </div>
       </div>
     </div>
   );
