@@ -1,0 +1,60 @@
+/* src/renderer/components/CardProperties.css */
+.card-properties {
+    width: 250px;
+    background-color: #f5f5f5;
+    border-left: 1px solid #e0e0e0;
+    padding: 15px;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .card-properties h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+  }
+
+  .form-group textarea {
+    resize: vertical;
+  }
+
+  .save-button {
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+
+  .save-button:hover {
+    background-color: #2980b9;
+  }
+
+  .no-selection {
+    color: #888;
+    font-style: italic;
+  }

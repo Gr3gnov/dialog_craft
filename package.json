@@ -2,7 +2,7 @@
   "name": "dialog_craft_v3",
   "version": "1.0.0",
   "description": "## About",
-  "main": "index.js",
+  "main": "src/main/main.js",
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
