@@ -5,8 +5,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dialog Craft</title>
+  <script>
+    // Добавим проверку для отладки
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('DOM loaded in HTML');
+      const rootCheck = document.getElementById('root');
+      console.log('Root element in HTML:', rootCheck);
+    });
+  </script>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <!-- Если React не загрузится, мы увидим это сообщение -->
+    <p>Loading application... If you see this message, React has not rendered.</p>
+  </div>
 </body>
 </html>

@@ -5,8 +5,11 @@
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "concurrently \"webpack serve --mode development\" \"electron .\"",
-    "build": "webpack --mode production"
+    "dev": "concurrently \"npm run webpack-dev\" \"npm run electron-dev\"",
+    "webpack-dev": "webpack serve --mode development",
+    "electron-dev": "electron .",
+    "build": "webpack --mode production",
+    "electron-build": "electron-builder"
   },
   "repository": {
     "type": "git",
