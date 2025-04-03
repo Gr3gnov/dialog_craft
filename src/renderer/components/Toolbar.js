@@ -11,12 +11,6 @@ const Toolbar = ({ onAddCard }) => {
       >
         Add Character Dialog
       </button>
-      <button
-        className="add-card narrator"
-        onClick={() => onAddCard('narrator')}
-      >
-        Add Narrator Dialog
-      </button>
     </div>
   );
 };

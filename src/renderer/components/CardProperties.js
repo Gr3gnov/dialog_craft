@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import './CardProperties.css';
 
-
-const { dialog } = window.require('electron').remote;
+// Импортируем ipcRenderer для взаимодействия с основным процессом
+const { ipcRenderer } = window.require('electron');
 
 const CardProperties = ({ card, onUpdate }) => {
   const [title, setTitle] = useState('');
@@ -32,26 +32,25 @@ const CardProperties = ({ card, onUpdate }) => {
       setIsThought(card.is_thought || false);
     }
   }, [card]);
- // Function to handle file selection
- const handleFileSelect = (field) => {
-  dialog.showOpenDialog({
-    properties: ['openFile'],
-    filters: [
-      { name: 'Images', extensions: ['jpg', 'png', 'gif', 'jpeg'] }
-    ]
-  }).then(result => {
-    if (!result.canceled && result.filePaths.length > 0) {
-      const filePath = result.filePaths[0];
-      if (field === 'portrait') {
-        setPortrait(filePath);
-      } else if (field === 'background') {
-        setBackground(filePath);
+
+  // Функция для открытия диалога выбора файла
+  const handleFileSelect = async (field) => {
+    try {
+      const result = await ipcRenderer.invoke('show-file-dialog');
+      if (!result.canceled && result.filePaths.length > 0) {
+        const filePath = result.filePaths[0];
+        if (field === 'portrait') {
+          setPortrait(`file://${filePath}`);
+        } else if (field === 'background') {
+          setBackground(`file://${filePath}`);
+        }
       }
+    } catch (err) {
+      console.error('Error selecting file:', err);
+      alert('Failed to select file. Check console for details.');
     }
-  }).catch(err => {
-    console.error('Error selecting file:', err);
-  });
-};
+  };
+
   // Handle form submission
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -69,6 +68,15 @@ const CardProperties = ({ card, onUpdate }) => {
         is_narrator: isNarrator,
         is_thought: isThought
       });
+    }
+  };
+
+  // Функция сброса пути к файлу
+  const resetFile = (field) => {
+    if (field === 'portrait') {
+      setPortrait('');
+    } else if (field === 'background') {
+      setBackground('');
     }
   };
 
@@ -151,6 +159,13 @@ const CardProperties = ({ card, onUpdate }) => {
               >
                 Browse...
               </button>
+              <button
+                type="button"
+                className="reset-button"
+                onClick={() => resetFile('portrait')}
+              >
+                Reset
+              </button>
             </div>
           </div>
           <div className="form-group file-input">
@@ -170,6 +185,13 @@ const CardProperties = ({ card, onUpdate }) => {
                 onClick={() => handleFileSelect('background')}
               >
                 Browse...
+              </button>
+              <button
+                type="button"
+                className="reset-button"
+                onClick={() => resetFile('background')}
+              >
+                Reset
               </button>
             </div>
           </div>

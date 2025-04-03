@@ -1,5 +1,5 @@
 // src/main/main.js
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const isDev = require('electron-is-dev');
 
@@ -42,6 +42,27 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
   console.log("App ready, window created");
+
+  // Add handler for show-file-dialog
+  ipcMain.handle('show-file-dialog', async (event, options) => {
+    if (!mainWindow) return { canceled: true };
+
+    try {
+      const result = await dialog.showOpenDialog(mainWindow, {
+        properties: ['openFile'],
+        filters: [
+          { name: 'Images', extensions: ['jpg', 'jpeg', 'png', 'gif'] }
+        ],
+        ...options
+      });
+
+      console.log('File dialog result:', result);
+      return result;
+    } catch (error) {
+      console.error('Error showing file dialog:', error);
+      return { canceled: true, error: error.message };
+    }
+  });
 });
 
 // Quit when all windows are closed

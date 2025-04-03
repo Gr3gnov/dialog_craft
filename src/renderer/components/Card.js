@@ -38,6 +38,9 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
     card.is_thought ? 'thought' : ''
   ].filter(Boolean).join(' ');
 
+  // Determine if we should show a placeholder
+  const defaultAvatar = 'https://via.placeholder.com/50/cccccc/666666?text=No+Image';
+
   return (
     <div
       ref={cardRef}
@@ -54,11 +57,16 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
         <div className="card-title">{card.title || 'Untitled'}</div>
       </div>
       <div className="card-body">
-        {card.portrait && (
-          <div className="card-portrait">
-            <img src={card.portrait} alt="Character" />
-          </div>
-        )}
+        <div className="card-portrait">
+          <img
+            src={card.portrait || defaultAvatar}
+            alt={card.character_name || "Character"}
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = defaultAvatar;
+            }}
+          />
+        </div>
         <div className="card-content">
           {card.character_name && <div className="character-name">{card.character_name}</div>}
           <div className="card-text">{card.text || 'Empty dialog...'}</div>
