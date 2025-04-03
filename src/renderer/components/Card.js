@@ -5,6 +5,17 @@ import './Card.css';
 const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, scale = 1 }) => {
   const cardRef = useRef(null);
 
+  // Используем относительный путь к скопированному ресурсу
+  const defaultAvatar = './assets/default_avatar.png';
+
+  // Определяем классы для карточки
+  const cardClasses = [
+    'dialog-card',
+    isSelected ? 'selected' : '',
+    card.is_narrator ? 'narrator' : '',
+    card.is_thought ? 'thought' : ''
+  ].filter(Boolean).join(' ');
+
   // Handle card selection
   const handleClick = (e) => {
     e.stopPropagation();
@@ -30,16 +41,7 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
     onDragEnd();
   };
 
-  // Determine card type classes
-  const cardClasses = [
-    'dialog-card',
-    isSelected ? 'selected' : '',
-    card.is_narrator ? 'narrator' : '',
-    card.is_thought ? 'thought' : ''
-  ].filter(Boolean).join(' ');
 
-  // Determine if we should show a placeholder
-  const defaultAvatar = 'https://via.placeholder.com/50/cccccc/666666?text=No+Image';
 
   return (
     <div

@@ -1,6 +1,7 @@
-// webpack.config.js - обновленная версия
+// webpack.config.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin'); // Добавляем плагин
 
 module.exports = {
   mode: 'development',
@@ -9,7 +10,7 @@ module.exports = {
   output: {
     path: path.resolve(__dirname, 'build'),
     filename: 'bundle.js',
-    publicPath: './' // Важно для корректных путей
+    publicPath: './'
   },
   module: {
     rules: [
@@ -26,13 +27,7 @@ module.exports = {
       {
         test: /\.css$/,
         use: ['style-loader', 'css-loader']
-      }, {
-        test: /\.(png|jpe?g|gif|svg)$/i,
-        type: 'asset/resource',
-        generator: {
-          filename: 'images/[hash][ext][query]'
-        }
-      },
+      }
     ]
   },
   resolve: {
@@ -41,6 +36,11 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'public', 'index.html')
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: 'public/default_avatar.png', to: 'assets/' } // Копируем в build/assets/
+      ],
     })
   ],
   devServer: {
