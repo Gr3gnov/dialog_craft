@@ -7,7 +7,12 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
 
   // Используем относительный путь к скопированному ресурсу
   const defaultAvatar = './assets/default_avatar.png';
-
+  const truncateText = (text, maxLength = 300) => { // Увеличиваем с 100 до 300 символов
+    if (!text) return 'Empty dialog...';
+    return text.length > maxLength
+      ? `${text.substring(0, maxLength)}...`
+      : text;
+  };
   // Определяем классы для карточки
   const cardClasses = [
     'dialog-card',
@@ -71,7 +76,7 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
         </div>
         <div className="card-content">
           {card.character_name && <div className="character-name">{card.character_name}</div>}
-          <div className="card-text">{card.text || 'Empty dialog...'}</div>
+          <div className="card-text">{truncateText(card.text)}</div>
         </div>
       </div>
     </div>

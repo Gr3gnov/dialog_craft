@@ -1,6 +1,6 @@
 /* src/renderer/components/CardProperties.css */
 .card-properties {
-  width: 300px;
+  width: 600px; /* Увеличиваем с 300px до 400px */
   background-color: #fff;
   border-left: 1px solid #e0e0e0;
   padding: 20px;
@@ -52,7 +52,7 @@
 
 .form-group textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 150px; /* Увеличиваем с 80px до 150px */
 }
 
 .form-group.checkbox {

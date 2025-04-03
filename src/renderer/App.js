@@ -1,5 +1,5 @@
-// src/renderer/App.js
-import React, { useState } from 'react';
+// В src/renderer/App.js
+import React, { useState, useRef } from 'react';
 import Canvas from './components/Canvas';
 import CardProperties from './components/CardProperties';
 import Toolbar from './components/Toolbar';
@@ -8,6 +8,7 @@ import './App.css';
 function App() {
   const [cards, setCards] = useState([]);
   const [selectedCardId, setSelectedCardId] = useState(null);
+  const nextIdRef = useRef(1); // Счетчик для ID, начиная с 1
 
   // Get currently selected card
   const selectedCard = cards.find(card => card.id === selectedCardId);
@@ -15,7 +16,7 @@ function App() {
   // Add a new card
   const handleAddCard = (type) => {
     const newCard = {
-      id: Date.now().toString(),
+      id: nextIdRef.current.toString(), // Используем текущее значение счетчика
       title: type === 'narrator' ? 'Narrator' : 'Character',
       text: '',
       type: type,
@@ -25,9 +26,12 @@ function App() {
       }
     };
 
+    nextIdRef.current += 1; // Увеличиваем счетчик для следующей карточки
     setCards([...cards, newCard]);
     setSelectedCardId(newCard.id);
   };
+
+
 
   // Update a card
   const handleUpdateCard = (updatedCard) => {

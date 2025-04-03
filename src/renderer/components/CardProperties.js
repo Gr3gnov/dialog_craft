@@ -33,6 +33,67 @@ const CardProperties = ({ card, onUpdate }) => {
     }
   }, [card]);
 
+  // Автосохранение - функции обработчики изменений
+  const handleTitleChange = (e) => {
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+    saveChanges({ title: newTitle });
+  };
+
+  const handleTextChange = (e) => {
+    const newText = e.target.value;
+    setText(newText);
+    saveChanges({ text: newText });
+  };
+
+  const handleTypeChange = (e) => {
+    const newType = e.target.value;
+    setType(newType);
+    saveChanges({ type: newType });
+  };
+
+  const handleCharacterNameChange = (e) => {
+    const newName = e.target.value;
+    setCharacterName(newName);
+    saveChanges({ character_name: newName });
+  };
+
+  const handleBackgroundChange = (e) => {
+    const newBackground = e.target.value;
+    setBackground(newBackground);
+    saveChanges({ background: newBackground });
+  };
+
+  const handlePortraitChange = (e) => {
+    const newPortrait = e.target.value;
+    setPortrait(newPortrait);
+    saveChanges({ portrait: newPortrait });
+  };
+
+  const handleIntroduceCharacterChange = (e) => {
+    const newIntroduce = e.target.checked;
+    setIntroduceCharacter(newIntroduce);
+    saveChanges({ introduce_character: newIntroduce });
+  };
+
+  const handlePauseChange = (e) => {
+    const newPause = parseFloat(e.target.value) || 0;
+    setPause(newPause);
+    saveChanges({ pause: newPause });
+  };
+
+  const handleIsNarratorChange = (e) => {
+    const newIsNarrator = e.target.checked;
+    setIsNarrator(newIsNarrator);
+    saveChanges({ is_narrator: newIsNarrator });
+  };
+
+  const handleIsThoughtChange = (e) => {
+    const newIsThought = e.target.checked;
+    setIsThought(newIsThought);
+    saveChanges({ is_thought: newIsThought });
+  };
+
   // Функция для открытия диалога выбора файла
   const handleFileSelect = async (field) => {
     try {
@@ -41,8 +102,10 @@ const CardProperties = ({ card, onUpdate }) => {
         const filePath = result.filePaths[0];
         if (field === 'portrait') {
           setPortrait(`file://${filePath}`);
+          saveChanges({ portrait: `file://${filePath}` });
         } else if (field === 'background') {
           setBackground(`file://${filePath}`);
+          saveChanges({ background: `file://${filePath}` });
         }
       }
     } catch (err) {
@@ -51,22 +114,12 @@ const CardProperties = ({ card, onUpdate }) => {
     }
   };
 
-  // Handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // Вспомогательная функция для сохранения изменений
+  const saveChanges = (changes) => {
     if (card) {
       onUpdate({
         ...card,
-        title,
-        text,
-        type,
-        character_name: characterName,
-        background,
-        portrait,
-        introduce_character: introduceCharacter,
-        pause,
-        is_narrator: isNarrator,
-        is_thought: isThought
+        ...changes
       });
     }
   };
@@ -75,9 +128,17 @@ const CardProperties = ({ card, onUpdate }) => {
   const resetFile = (field) => {
     if (field === 'portrait') {
       setPortrait('');
+      saveChanges({ portrait: '' });
     } else if (field === 'background') {
       setBackground('');
+      saveChanges({ background: '' });
     }
+  };
+
+  // Handle form submission - больше не нужна, так как используем автосохранение
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Оставляем для совместимости, но она уже не нужна
   };
 
   if (!card) {
@@ -100,7 +161,7 @@ const CardProperties = ({ card, onUpdate }) => {
               type="text"
               id="title"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={handleTitleChange}
               placeholder="Dialog title"
             />
           </div>
@@ -119,7 +180,7 @@ const CardProperties = ({ card, onUpdate }) => {
               type="text"
               id="character_name"
               value={characterName}
-              onChange={(e) => setCharacterName(e.target.value)}
+              onChange={handleCharacterNameChange}
               placeholder="Character speaking"
             />
           </div>
@@ -132,7 +193,7 @@ const CardProperties = ({ card, onUpdate }) => {
             <textarea
               id="text"
               value={text}
-              onChange={(e) => setText(e.target.value)}
+              onChange={handleTextChange}
               rows={5}
               placeholder="Enter dialog text here..."
             ></textarea>
@@ -148,7 +209,7 @@ const CardProperties = ({ card, onUpdate }) => {
                 type="text"
                 id="portrait"
                 value={portrait}
-                onChange={(e) => setPortrait(e.target.value)}
+                onChange={handlePortraitChange}
                 placeholder="Path to portrait image"
                 className="file-path"
               />
@@ -175,7 +236,7 @@ const CardProperties = ({ card, onUpdate }) => {
                 type="text"
                 id="background"
                 value={background}
-                onChange={(e) => setBackground(e.target.value)}
+                onChange={handleBackgroundChange}
                 placeholder="Path to background image"
                 className="file-path"
               />
@@ -204,7 +265,7 @@ const CardProperties = ({ card, onUpdate }) => {
             <select
               id="type"
               value={type}
-              onChange={(e) => setType(e.target.value)}
+              onChange={handleTypeChange}
             >
               <option value="character">Character</option>
               <option value="narrator">Narrator</option>
@@ -216,7 +277,7 @@ const CardProperties = ({ card, onUpdate }) => {
               type="number"
               id="pause"
               value={pause}
-              onChange={(e) => setPause(parseFloat(e.target.value) || 0)}
+              onChange={handlePauseChange}
               min="0"
               step="0.1"
             />
@@ -226,7 +287,7 @@ const CardProperties = ({ card, onUpdate }) => {
               <input
                 type="checkbox"
                 checked={introduceCharacter}
-                onChange={(e) => setIntroduceCharacter(e.target.checked)}
+                onChange={handleIntroduceCharacterChange}
               />
               Introduce Character
             </label>
@@ -236,7 +297,7 @@ const CardProperties = ({ card, onUpdate }) => {
               <input
                 type="checkbox"
                 checked={isNarrator}
-                onChange={(e) => setIsNarrator(e.target.checked)}
+                onChange={handleIsNarratorChange}
               />
               Is Narrator
             </label>
@@ -246,15 +307,16 @@ const CardProperties = ({ card, onUpdate }) => {
               <input
                 type="checkbox"
                 checked={isThought}
-                onChange={(e) => setIsThought(e.target.checked)}
+                onChange={handleIsThoughtChange}
               />
               Is Thought
             </label>
           </div>
         </div>
 
+        {/* Кнопка теперь не нужна из-за автосохранения, но можно оставить для удобства пользователя */}
         <button type="submit" className="save-button">
-          Save Changes
+          Apply Changes
         </button>
       </form>
     </div>

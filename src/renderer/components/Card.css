@@ -1,8 +1,8 @@
 /* src/renderer/components/Card.css */
 .dialog-card {
   position: absolute;
-  width: 260px;
-  min-height: 120px;
+  width: 500px; /* Увеличиваем до 500px */
+  height: 150px; /* Увеличиваем до 250px */
   background-color: #ffffff;
   border: 1px solid #cccccc;
   border-radius: 8px;
@@ -46,16 +46,20 @@
 .card-body {
   display: flex;
   padding: 10px;
+  align-items: center; /* Центрируем по вертикали */
+  height: calc(100% - 40px); /* Высота карточки минус высота заголовка */
 }
 
 .card-portrait {
-  width: 50px;
-  height: 50px;
+  width: 100px; /* Увеличиваем с 50px */
+  height: 100px; /* Увеличиваем с 50px */
   margin-right: 10px;
   border-radius: 4px;
   overflow: hidden;
   flex-shrink: 0;
   border: 1px solid #ddd;
+  align-self: center;
+
 }
 
 .card-portrait img {
@@ -77,9 +81,11 @@
   font-size: 13px;
 }
 
+/* Увеличим размер контейнера текста */
 .card-text {
   font-size: 14px;
-  max-height: 150px;
-  overflow-y: auto;
+  max-height: 170px; /* Увеличиваем высоту для текста */
+  overflow: hidden;
+  text-overflow: ellipsis;
   word-break: break-word;
 }
