@@ -17,7 +17,8 @@ const Canvas = ({
   sourceCardId,
   setSourceCardId,
   onStartConnection,
-  onDeleteCard
+  onDeleteCard,
+  onAddCard // Add this prop to receive the function from App.js
 }) => {
   const canvasRef = useRef(null);
   const [dragging, setDragging] = useState(null);
@@ -347,6 +348,25 @@ const Canvas = ({
     }
   };
 
+  // Handle the floating add button click
+  const handleFloatingAddButtonClick = (e) => {
+    e.stopPropagation(); // Prevent canvas click from triggering
+
+    // Получаем информацию о текущем состоянии холста
+    const canvasRect = canvasRef.current.getBoundingClientRect();
+    const canvasInfo = {
+      viewport: {
+        width: canvasRect.width,
+        height: canvasRect.height
+      },
+      offset: canvasOffset,
+      scale: scale
+    };
+
+    // Передаём эту информацию в функцию создания карточки
+    onAddCard('character', canvasInfo);
+  };
+
   return (
     <div
       ref={canvasRef}
@@ -479,6 +499,15 @@ const Canvas = ({
           {sourceCardId ? "Select target card" : "Select source card"}
         </div>
       )}
+
+      {/* Floating add card button */}
+      <div
+        className="floating-add-button"
+        onClick={handleFloatingAddButtonClick}
+        title="Add Character Card"
+      >
+        +
+      </div>
     </div>
   );
 };

@@ -53,6 +53,31 @@
   z-index: 1000;
 }
 
+/* Floating add card button */
+.floating-add-button {
+  position: fixed;
+  top: 10px;
+  right: 610px; /* Левее секции Dialog Properties (ширина секции 600px + отступ) */
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #4CAF50;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  z-index: 1001;
+  transition: all 0.2s ease;
+}
+
+.floating-add-button:hover {
+  transform: scale(1.1);
+  background-color: #45a049;
+}
+
 /* SVG layer for connections */
 .connections-layer {
   position: absolute;
