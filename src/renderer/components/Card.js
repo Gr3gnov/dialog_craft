@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import './Card.css';
 
-const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, scale = 1, connectionMode = false }) => {
+const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, scale = 1, connectionMode = false, onStartConnection }) => {
   const cardRef = useRef(null);
 
   // Используем относительный путь к скопированному ресурсу
@@ -26,6 +26,14 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
   const handleClick = (e) => {
     e.stopPropagation();
     onSelect(card.id);
+  };
+
+  // Handle connection button click
+  const handleStartConnection = (e) => {
+    e.stopPropagation();
+    if (onStartConnection) {
+      onStartConnection(card.id);
+    }
   };
 
   // Handle drag start
@@ -86,6 +94,14 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
           <div className="card-text">{truncateText(card.text)}</div>
         </div>
       </div>
+
+      {/* Connection button at the bottom left */}
+      <div className="connection-button" onClick={handleStartConnection} title="Create connection">
+        <span>+</span>
+      </div>
+
+      {/* Connection target indicator at the top */}
+      <div className="connection-target" />
     </div>
   );
 };

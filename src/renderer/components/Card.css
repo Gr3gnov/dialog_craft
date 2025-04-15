@@ -11,7 +11,7 @@
   cursor: grab;
   user-select: none;
   z-index: 1;
-  overflow: hidden;
+  overflow: visible; /* Изменено с hidden на visible */
 }
 
 .dialog-card.selected {
@@ -88,4 +88,56 @@
   overflow: hidden;
   text-overflow: ellipsis;
   word-break: break-word;
+}
+
+/* Connection button styles */
+.dialog-card .connection-button {
+  position: absolute;
+  bottom: -12px;
+  left: 20px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #3498db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.dialog-card .connection-button:hover {
+  background-color: #2980b9;
+  transform: scale(1.1);
+}
+
+/* Connection target indicator styles */
+.dialog-card .connection-target {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #3498db;
+  border: 2px solid white;
+  display: none;
+  z-index: 10;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Show connection target when in active connection mode */
+.connection-mode .dialog-card .connection-target {
+  display: block;
+}
+
+/* Highlight the connection target when hovering on it during connection mode */
+.connection-mode .dialog-card:hover .connection-target {
+  background-color: #2ecc71;
+  transform: translateX(-50%) scale(1.2);
 }

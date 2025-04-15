@@ -4,7 +4,20 @@ import Card from './Card';
 import Connection from './Connection';
 import './Canvas.css';
 
-const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard, onConnectionSelect, selectedConnectionId, onCreateConnection, createConnectionMode, sourceCardId }) => {
+const Canvas = ({
+  cards,
+  connections,
+  onCardSelect,
+  selectedCardId,
+  onUpdateCard,
+  onConnectionSelect,
+  selectedConnectionId,
+  onCreateConnection,
+  createConnectionMode,
+  sourceCardId,
+  setSourceCardId,
+  onStartConnection
+}) => {
   const canvasRef = useRef(null);
   const [dragging, setDragging] = useState(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
@@ -16,18 +29,37 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
   const [canvasOffset, setCanvasOffset] = useState({ x: 0, y: 0 });
   const [spacePressed, setSpacePressed] = useState(false);
 
+  // Connection state
+  const [isCreatingConnection, setIsCreatingConnection] = useState(false);
+
   // Zoom state
   const [scale, setScale] = useState(1);
   const MIN_SCALE = 0.1;
   const MAX_SCALE = 3;
   const ZOOM_SENSITIVITY = 0.0005;
 
-  // Handle canvas click (deselect)
-  const handleCanvasClick = (e) => {
-    if (e.target === canvasRef.current || e.target.tagName === 'svg') {
-      onCardSelect(null);
-      onConnectionSelect(null);
-    }
+  // Get connection points for source and target cards
+  const getConnectionSourcePoint = (cardId) => {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return null;
+
+    // Position for connection button (bottom left)
+    return {
+      x: card.position.x + 20, // Connection button is positioned 20px from left
+      y: card.position.y + 150 // Connection button is at bottom of card (150px height)
+    };
+  };
+
+  const getConnectionTargetPoint = (cardId) => {
+    const card = cards.find(c => c.id === cardId);
+    if (!card) return null;
+
+    // Позиция для круга соединения на верхней грани карточки
+    // CSS: top: -8px; left: 50%; transform: translateX(-50%);
+    return {
+      x: card.position.x + 250, // Середина карточки (500px width / 2)
+      y: card.position.y - 8    // Чуть выше верхнего края (-8px)
+    };
   };
 
   // Calculate the center position of a card
@@ -78,6 +110,36 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
     };
   };
 
+  // Handle canvas click (deselect)
+  const handleCanvasClick = (e) => {
+    if (e.target === canvasRef.current || e.target.className === 'connections-layer') {
+      // If in connection mode and clicking on canvas, cancel connection
+      if (isCreatingConnection) {
+        setIsCreatingConnection(false);
+        setTempConnection(null);
+        setSourceCardId(null);
+      } else {
+        onCardSelect(null);
+        onConnectionSelect(null);
+      }
+    }
+  };
+
+  // Start connection creation from a card
+  const handleStartConnection = (cardId) => {
+    onStartConnection(cardId);
+    setIsCreatingConnection(true);
+
+    // Initialize temporary connection
+    const sourcePoint = getConnectionSourcePoint(cardId);
+    if (sourcePoint) {
+      setTempConnection({
+        start: sourcePoint,
+        end: sourcePoint // Initially set to same point, will update with mouse movement
+      });
+    }
+  };
+
   // Handle mouse move for card dragging, canvas panning, or connection creation
   const handleMouseMove = (e) => {
     if (dragging) {
@@ -118,16 +180,16 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
         x: e.clientX,
         y: e.clientY
       });
-    } else if (createConnectionMode && sourceCardId) {
-      // Connection creation mode
+    } else if (isCreatingConnection && sourceCardId) {
+      // Connection creation mode with new button
       const canvasRect = canvasRef.current.getBoundingClientRect();
       const mouseX = (e.clientX - canvasRect.left - canvasOffset.x) / scale;
       const mouseY = (e.clientY - canvasRect.top - canvasOffset.y) / scale;
 
-      const sourceCenter = getCardCenter(sourceCardId);
-      if (sourceCenter) {
+      const sourcePoint = getConnectionSourcePoint(sourceCardId);
+      if (sourcePoint) {
         setTempConnection({
-          start: sourceCenter,
+          start: sourcePoint,
           end: { x: mouseX, y: mouseY }
         });
       }
@@ -161,12 +223,13 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
 
   // Handle card click in connection mode
   const handleCardClick = (cardId) => {
-    if (createConnectionMode && sourceCardId) {
+    if (isCreatingConnection && sourceCardId) {
       // If already in connection mode and we have a source, create connection to this card
       if (sourceCardId !== cardId) {
         onCreateConnection(sourceCardId, cardId);
-        // Exit connection mode immediately after creating connection
+        // Exit connection mode after creating connection
         setTempConnection(null);
+        setIsCreatingConnection(false);
       }
     } else {
       // Normal card selection
@@ -178,6 +241,7 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
   useEffect(() => {
     if (!createConnectionMode) {
       setTempConnection(null);
+      setIsCreatingConnection(false);
     }
   }, [createConnectionMode]);
 
@@ -264,10 +328,10 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
   return (
     <div
       ref={canvasRef}
-      className={`canvas ${createConnectionMode ? 'connection-mode' : ''}`}
+      className={`canvas ${isCreatingConnection || createConnectionMode ? 'connection-mode' : ''}`}
       onClick={handleCanvasClick}
       onMouseDown={handleMouseDown}
-      style={{ cursor: spacePressed ? 'grab' : createConnectionMode ? 'crosshair' : 'default' }}
+      style={{ cursor: spacePressed ? 'grab' : (isCreatingConnection || createConnectionMode) ? 'crosshair' : 'default' }}
     >
       <div
         className="canvas-content"
@@ -310,108 +374,58 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
 
           {/* Render permanent connections */}
           {connections.map((connection) => {
-            const sourceCenter = getCardCenter(connection.sourceId);
-            const targetCenter = getCardCenter(connection.targetId);
+            const sourcePoint = getConnectionSourcePoint(connection.sourceId);
+            const targetPoint = getConnectionTargetPoint(connection.targetId);
 
-            if (!sourceCenter || !targetCenter) return null;
-
-            // Вычисляем направление от центра источника к центру цели
-            const directionToTarget = {
-              x: targetCenter.x - sourceCenter.x,
-              y: targetCenter.y - sourceCenter.y
-            };
-
-            // Вычисляем направление от центра цели к центру источника (обратное)
-            const directionToSource = {
-              x: -directionToTarget.x,
-              y: -directionToTarget.y
-            };
-
-            // Получаем точки пересечения с границами карточек
-            const startPoint = getIntersectionWithCardBorder(connection.sourceId, directionToTarget);
-            const endPoint = getIntersectionWithCardBorder(connection.targetId, directionToSource);
-
-            if (!startPoint || !endPoint) return null;
+            if (!sourcePoint || !targetPoint) return null;
 
             return (
               <Connection
                 key={connection.id}
                 connection={connection}
-                startPoint={startPoint}
-                endPoint={endPoint}
-                sourceCenter={sourceCenter}
-                targetCenter={targetCenter}
+                startPoint={sourcePoint}
+                endPoint={targetPoint}
+                sourceCenter={getCardCenter(connection.sourceId)}
+                targetCenter={getCardCenter(connection.targetId)}
                 isSelected={connection.id === selectedConnectionId}
                 onSelect={onConnectionSelect}
+                cards={cards} // Передаем весь массив карточек для определения маршрута
               />
             );
           })}
 
           {/* Render temporary connection while creating */}
           {tempConnection && sourceCardId && (
-            <>
-              {(() => {
-                const sourceCenter = getCardCenter(sourceCardId);
-                if (!sourceCenter) return null;
-
-                const directionToMouse = {
-                  x: tempConnection.end.x - sourceCenter.x,
-                  y: tempConnection.end.y - sourceCenter.y
-                };
-
-                // Получаем точку на границе исходной карточки
-                const startBorderPoint = getIntersectionWithCardBorder(sourceCardId, directionToMouse);
-                if (!startBorderPoint) return null;
-
-                // Рисуем простую линию от границы до курсора
-                return (
-                  <>
-                    <path
-                      d={`M ${startBorderPoint.x} ${startBorderPoint.y} L ${tempConnection.end.x} ${tempConnection.end.y}`}
-                      stroke="#3498db"
-                      strokeWidth={2}
-                      strokeDasharray="5,5"
-                      fill="none"
-                    />
-
-                    {/* Добавляем стрелку на конце временной линии */}
-                    {(() => {
-                      // Нормализуем вектор направления
-                      const length = Math.sqrt(directionToMouse.x * directionToMouse.x + directionToMouse.y * directionToMouse.y);
-                      const normalizedDirX = directionToMouse.x / length;
-                      const normalizedDirY = directionToMouse.y / length;
-
-                      // Параметры стрелки
-                      const arrowLength = 20;
-                      const arrowWidth = 10;
-
-                      // Вектора перпендикулярные основному направлению для создания "крыльев" стрелки
-                      const perpX = -normalizedDirY;
-                      const perpY = normalizedDirX;
-
-                      // Точки основания стрелки
-                      const arrowBase1X = tempConnection.end.x - normalizedDirX * arrowLength + perpX * arrowWidth;
-                      const arrowBase1Y = tempConnection.end.y - normalizedDirY * arrowLength + perpY * arrowWidth;
-
-                      const arrowBase2X = tempConnection.end.x - normalizedDirX * arrowLength - perpX * arrowWidth;
-                      const arrowBase2Y = tempConnection.end.y - normalizedDirY * arrowLength - perpY * arrowWidth;
-
-                      // Создаем полигон для стрелки
-                      const arrowPoints = `${tempConnection.end.x},${tempConnection.end.y} ${arrowBase1X},${arrowBase1Y} ${arrowBase2X},${arrowBase2Y}`;
-
-                      return (
-                        <polygon
-                          points={arrowPoints}
-                          fill="#3498db"
-                          stroke="none"
-                          className="connection-arrow"
-                        />
-                      );
-                    })()}
-                  </>
-                );
-              })()}
-            </>
+            <g>
+              <polyline
+                points={
+                  tempConnection.start && tempConnection.end ?
+                  `${tempConnection.start.x},${tempConnection.start.y}
+                  ${tempConnection.start.x},${tempConnection.start.y + 40}
+                  ${(tempConnection.start.x + tempConnection.end.x - 50)/2},${tempConnection.start.y + 40}
+                  ${(tempConnection.start.x + tempConnection.end.x - 50)/2},${tempConnection.end.y}
+                  ${tempConnection.end.x - 50},${tempConnection.end.y}
+                  ${tempConnection.end.x},${tempConnection.end.y}`
+                  : ''
+                }
+                stroke="#3498db"
+                strokeWidth={2}
+                strokeDasharray="5,5"
+                fill="none"
+              />
+              {/* Стрелка для временного соединения */}
+              <polygon
+                points={
+                  tempConnection.end ?
+                  `${tempConnection.end.x},${tempConnection.end.y}
+                  ${tempConnection.end.x-8},${tempConnection.end.y-15}
+                  ${tempConnection.end.x+8},${tempConnection.end.y-15}`
+                  : ''
+                }
+                fill="#3498db"
+                stroke="none"
+              />
+            </g>
           )}
         </svg>
 
@@ -425,7 +439,8 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
             onDragEnd={handleMouseUp}
             position={card.position}
             scale={scale}
-            connectionMode={createConnectionMode}
+            connectionMode={isCreatingConnection || createConnectionMode}
+            onStartConnection={handleStartConnection}
           />
         ))}
       </div>
@@ -436,7 +451,7 @@ const Canvas = ({ cards, connections, onCardSelect, selectedCardId, onUpdateCard
       </div>
 
       {/* Connection mode indicator */}
-      {createConnectionMode && (
+      {isCreatingConnection && (
         <div className="connection-indicator">
           {sourceCardId ? "Select target card" : "Select source card"}
         </div>

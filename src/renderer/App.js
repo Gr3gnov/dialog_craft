@@ -84,6 +84,12 @@ function App() {
     }
   };
 
+  // Start connection from a specific card using the connection button
+  const handleStartConnection = (cardId) => {
+    setSourceCardId(cardId);
+    setCreateConnectionMode(true);
+  };
+
   // Handle connection selection
   const handleConnectionSelect = (connectionId) => {
     setSelectedConnectionId(connectionId);
@@ -141,8 +147,10 @@ function App() {
           onConnectionSelect={handleConnectionSelect}
           selectedConnectionId={selectedConnectionId}
           onCreateConnection={handleCreateConnection}
+          onStartConnection={handleStartConnection}
           createConnectionMode={createConnectionMode}
           sourceCardId={sourceCardId}
+          setSourceCardId={setSourceCardId}
         />
         <CardProperties
           card={selectedCard}
