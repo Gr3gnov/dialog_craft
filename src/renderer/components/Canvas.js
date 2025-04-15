@@ -113,16 +113,37 @@ const Canvas = ({
 
   // Handle canvas click (deselect)
   const handleCanvasClick = (e) => {
-    if (e.target === canvasRef.current || e.target.className === 'connections-layer') {
+    console.log('Canvas click detected', e.target);
+
+    // Проверяем, что клик был на пустой области холста или на слое соединений
+    // Также добавляем проверку на canvas-content, который занимает всё пространство
+    if (e.target === canvasRef.current ||
+        e.target.className === 'connections-layer' ||
+        e.target.className === 'canvas-content' ||
+        e.target.tagName.toLowerCase() === 'svg') {
+
+      console.log('Click on empty canvas area detected');
+
       // If in connection mode and clicking on canvas, cancel connection
       if (isCreatingConnection) {
         setIsCreatingConnection(false);
         setTempConnection(null);
         setSourceCardId(null);
-      } else {
-        onCardSelect(null);
-        onConnectionSelect(null);
       }
+
+      // Напрямую сообщаем о выходе из режима связи
+      if (createConnectionMode) {
+        // Напрямую вызываем обработчик в App.js для выхода из режима связи
+        onCardSelect(null);
+        // Также сбрасываем локальные состояния
+        setSourceCardId(null);
+        setIsCreatingConnection(false);
+        setTempConnection(null);
+      }
+
+      // Normal selection deselect
+      onCardSelect(null);
+      onConnectionSelect(null);
     }
   };
 

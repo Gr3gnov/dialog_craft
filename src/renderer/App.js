@@ -84,27 +84,39 @@ function App() {
       // Exit connection mode
       setCreateConnectionMode(false);
       setSourceCardId(null);
+      console.log('Exiting connection mode from toolbar');
     } else {
       // Enter connection mode
       setCreateConnectionMode(true);
       setSelectedConnectionId(null); // Deselect any selected connection
+      console.log('Entering connection mode from toolbar');
     }
   };
 
   // Handle card selection
   const handleCardSelect = (cardId) => {
+    console.log('Card select called with:', cardId);
+
     if (createConnectionMode) {
-      if (!sourceCardId) {
+      if (cardId === null) {
+        // Клик по пустому месту в режиме создания связей - выходим из режима
+        console.log('Click on empty area while in connection mode - exiting connection mode');
+        setCreateConnectionMode(false);
+        setSourceCardId(null);
+      } else if (!sourceCardId) {
         // First card in connection creation process
+        console.log('Selected first card in connection:', cardId);
         setSourceCardId(cardId);
       } else if (sourceCardId !== cardId) {
         // Second card - create connection and exit connection mode
+        console.log('Creating connection:', sourceCardId, '->', cardId);
         handleCreateConnection(sourceCardId, cardId);
         setCreateConnectionMode(false);
         setSourceCardId(null);
       }
     } else {
       // Normal card selection
+      console.log('Normal card selection:', cardId);
       setSelectedCardId(cardId);
       setSelectedConnectionId(null); // Deselect any selected connection
     }
@@ -112,14 +124,16 @@ function App() {
 
   // Start connection from a specific card using the connection button
   const handleStartConnection = (cardId) => {
+    console.log('Starting connection from card:', cardId);
+    // Если передан null, значит отключаем режим связи
+    if (cardId === null) {
+      setSourceCardId(null);
+      setCreateConnectionMode(false);
+      return;
+    }
+
     setSourceCardId(cardId);
     setCreateConnectionMode(true);
-  };
-
-  // Handle connection selection
-  const handleConnectionSelect = (connectionId) => {
-    setSelectedConnectionId(connectionId);
-    setSelectedCardId(null); // Deselect any selected card
   };
 
   // Create connection between two cards
@@ -153,6 +167,19 @@ function App() {
     setConnections(connections.filter(connection => connection.id !== connectionId));
     if (selectedConnectionId === connectionId) {
       setSelectedConnectionId(null);
+    }
+  };
+
+  // Handle connection selection
+  const handleConnectionSelect = (connectionId) => {
+    console.log('Connection selected:', connectionId);
+    setSelectedConnectionId(connectionId);
+    setSelectedCardId(null); // Deselect any selected card
+
+    // Также выходим из режима создания связи, если он был активен
+    if (createConnectionMode) {
+      setCreateConnectionMode(false);
+      setSourceCardId(null);
     }
   };
 
