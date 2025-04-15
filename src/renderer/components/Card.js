@@ -1,9 +1,10 @@
 // src/renderer/components/Card.js
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import './Card.css';
 
-const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, scale = 1, connectionMode = false, onStartConnection }) => {
+const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, scale = 1, connectionMode = false, onStartConnection, onDelete }) => {
   const cardRef = useRef(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   // Используем относительный путь к скопированному ресурсу
   const defaultAvatar = './assets/default_avatar.png';
@@ -26,6 +27,27 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
   const handleClick = (e) => {
     e.stopPropagation();
     onSelect(card.id);
+  };
+
+  // Handle delete button click
+  const handleDeleteClick = (e) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(true);
+  };
+
+  // Handle confirmation of deletion
+  const handleConfirmDelete = (e) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(false);
+    if (onDelete) {
+      onDelete(card.id);
+    }
+  };
+
+  // Handle cancellation of deletion
+  const handleCancelDelete = (e) => {
+    e.stopPropagation();
+    setShowDeleteConfirm(false);
   };
 
   // Handle connection button click
@@ -78,6 +100,19 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
       <div className="card-header">
         <div className="card-title">{card.title || 'Untitled'}</div>
       </div>
+
+      {/* Confirmation dialog */}
+      {showDeleteConfirm && (
+        <div className="delete-confirm-dialog" onClick={(e) => e.stopPropagation()}>
+          <p>Вы уверены, что хотите удалить эту карточку?</p>
+          <p className="warning-text">Это действие необратимо!</p>
+          <div className="confirm-buttons">
+            <button className="cancel-btn" onClick={handleCancelDelete}>Отмена</button>
+            <button className="confirm-btn" onClick={handleConfirmDelete}>Удалить</button>
+          </div>
+        </div>
+      )}
+
       <div className="card-body">
         <div className="card-portrait">
           <img
@@ -93,6 +128,11 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
           {card.character_name && <div className="character-name">{card.character_name}</div>}
           <div className="card-text">{truncateText(card.text)}</div>
         </div>
+      </div>
+
+      {/* Delete button at the top right */}
+      <div className="delete-button" onClick={handleDeleteClick} title="Delete card">
+        <span>×</span>
       </div>
 
       {/* Connection button at the bottom left */}

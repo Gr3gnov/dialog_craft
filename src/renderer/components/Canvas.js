@@ -16,7 +16,8 @@ const Canvas = ({
   createConnectionMode,
   sourceCardId,
   setSourceCardId,
-  onStartConnection
+  onStartConnection,
+  onDeleteCard
 }) => {
   const canvasRef = useRef(null);
   const [dragging, setDragging] = useState(null);
@@ -441,6 +442,7 @@ const Canvas = ({
             scale={scale}
             connectionMode={isCreatingConnection || createConnectionMode}
             onStartConnection={handleStartConnection}
+            onDelete={onDeleteCard}
           />
         ))}
       </div>

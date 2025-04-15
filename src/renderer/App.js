@@ -52,6 +52,32 @@ function App() {
     ));
   };
 
+  // Delete a card
+  const handleDeleteCard = (cardId) => {
+    // Удаляем все соединения, связанные с этой карточкой
+    const updatedConnections = connections.filter(
+      connection => connection.sourceId !== cardId && connection.targetId !== cardId
+    );
+
+    // Удаляем карточку
+    const updatedCards = cards.filter(card => card.id !== cardId);
+
+    // Обновляем состояния
+    setConnections(updatedConnections);
+    setCards(updatedCards);
+
+    // Если была удалена выбранная карточка, сбрасываем выбор
+    if (selectedCardId === cardId) {
+      setSelectedCardId(null);
+    }
+
+    // Если в режиме создания соединения была выбрана эта карточка, выходим из режима
+    if (sourceCardId === cardId) {
+      setSourceCardId(null);
+      setCreateConnectionMode(false);
+    }
+  };
+
   // Toggle connection creation mode
   const handleToggleConnectionMode = () => {
     if (createConnectionMode) {
@@ -151,6 +177,7 @@ function App() {
           createConnectionMode={createConnectionMode}
           sourceCardId={sourceCardId}
           setSourceCardId={setSourceCardId}
+          onDeleteCard={handleDeleteCard}
         />
         <CardProperties
           card={selectedCard}
