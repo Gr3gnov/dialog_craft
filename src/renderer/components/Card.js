@@ -2,7 +2,7 @@
 import React, { useRef } from 'react';
 import './Card.css';
 
-const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, scale = 1 }) => {
+const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, scale = 1, connectionMode = false }) => {
   const cardRef = useRef(null);
 
   // Используем относительный путь к скопированному ресурсу
@@ -18,7 +18,8 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
     'dialog-card',
     isSelected ? 'selected' : '',
     card.is_narrator ? 'narrator' : '',
-    card.is_thought ? 'thought' : ''
+    card.is_thought ? 'thought' : '',
+    connectionMode ? 'connection-mode' : ''
   ].filter(Boolean).join(' ');
 
   // Handle card selection
@@ -29,6 +30,11 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
 
   // Handle drag start
   const handleDragStart = (e) => {
+    // Don't start dragging in connection mode
+    if (connectionMode) {
+      return;
+    }
+
     e.stopPropagation();
     e.preventDefault();
 
@@ -43,10 +49,10 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
 
   // Handle mouse up to end dragging
   const handleDragEnd = () => {
-    onDragEnd();
+    if (!connectionMode) {
+      onDragEnd();
+    }
   };
-
-
 
   return (
     <div
@@ -55,6 +61,7 @@ const Card = ({ card, onSelect, isSelected, onDragStart, onDragEnd, position, sc
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
+        cursor: connectionMode ? 'crosshair' : 'grab'
       }}
       onClick={handleClick}
       onMouseDown={handleDragStart}

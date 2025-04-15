@@ -38,3 +38,36 @@
   user-select: none;
   z-index: 1000;
 }
+
+/* Connection mode indicator */
+.connection-indicator {
+  position: absolute;
+  bottom: 15px;
+  left: 15px;
+  background-color: rgba(52, 152, 219, 0.8);
+  color: white;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  user-select: none;
+  z-index: 1000;
+}
+
+/* SVG layer for connections */
+.connections-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.connections-layer path,
+.connections-layer g {
+  pointer-events: stroke;
+}
+
+/* Connection mode cursor */
+.connection-mode {
+  cursor: crosshair;
+}

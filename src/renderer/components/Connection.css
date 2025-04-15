@@ -1,0 +1,40 @@
+/* src/renderer/components/Connection.css */
+.connection {
+  pointer-events: stroke;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.connection.selected path {
+  filter: drop-shadow(0 0 3px rgba(52, 152, 219, 0.8));
+}
+
+.connection-label {
+  pointer-events: none;
+  user-select: none;
+  font-weight: bold;
+  text-shadow: 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white, 0px 0px 2px white;
+}
+
+.connection-mode .dialog-card {
+  cursor: crosshair;
+}
+
+/* Улучшенные стили для стрелки связи */
+.connection-arrow {
+  pointer-events: all;
+  stroke-width: 1px;
+  stroke-linejoin: round;
+  stroke-opacity: 1;
+  /* Гарантируем что стрелка будет отображаться поверх линии */
+  z-index: 2;
+}
+
+.connection.selected .connection-arrow {
+  filter: drop-shadow(0 0 3px rgba(52, 152, 219, 0.8));
+}
+
+/* Новый стиль для стрелок через SVG marker */
+.arrow-marker {
+  overflow: visible;
+}

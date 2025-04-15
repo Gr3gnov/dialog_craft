@@ -109,6 +109,23 @@
   background-color: #45a049;
 }
 
+.delete-button {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+  width: 100%;
+}
+
+.delete-button:hover {
+  background-color: #c0392b;
+}
+
 .field-group {
   border: 1px solid #eee;
   border-radius: 4px;
@@ -132,4 +149,32 @@
 .file-input-container input {
   flex: 1;
   margin-right: 8px;
+}
+
+.no-selection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: #999;
+  font-style: italic;
+}
+
+/* Connection specific styles */
+.connection-properties h3 {
+  color: #3498db;
+}
+
+.reset-button {
+  background-color: #95a5a6;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.reset-button:hover {
+  background-color: #7f8c8d;
 }
